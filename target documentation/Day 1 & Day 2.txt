@@ -1,0 +1,5 @@
+Day 1 & Day 2 Target: 
+
+- Project Initialization and Installation for BE and FE
+- Login Authentication following Role Routes
+- CRUD User
