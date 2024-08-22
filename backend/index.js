@@ -6,12 +6,15 @@ const pool = require('./config/db');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 
 const app = express();
 const PORT = 3000;
 
 // Set view engine menjadi EJS
 app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
 
 // Middleware
@@ -27,23 +30,55 @@ app.use(session({
   cookie: { secure: false }
 }));
 
+// Middleware untuk cek login
+function checkLogin(req, res, next) {
+  if (!req.session.user) {
+    return res.redirect('/login');
+  }
+  next();
+}
+
+// Konfigurasi multer untuk upload gambar
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = './public/uploads/';
+    // Buat folder jika belum ada
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Nama file unik
+  }
+});
+
+const upload = multer({ storage: storage });
+
 // Route utama untuk mengecek apakah user sudah login atau belum
 app.get('/', (req, res) => {
+  // Cek apakah user sudah login atau belum
   if (!req.session.user) {
-    return res.render('login', { title: 'Login' });
+    return res.redirect('/login');
   }
 
-  if (req.session.user.role === 'superadmin') {
+  // Redirect ke halaman sesuai role
+  const userRole = req.session.user.role;
+  if (userRole === 'superadmin') {
     return res.redirect('/superadmin');
-  } else if (req.session.user.role === 'admin') {
+  } else if (userRole === 'admin') {
     return res.redirect('/admin');
-  } else if (req.session.user.role === 'user') {
+  } else if (userRole === 'user') {
     return res.redirect('/user');
   }
 });
 
 // Route untuk halaman login
 app.get('/login', (req, res) => {
+  // Jika sudah login, redirect ke dashboard sesuai role
+  if (req.session.user) {
+    return res.redirect('/');
+  }
   res.render('login', { title: 'Login' });
 });
 
@@ -69,38 +104,31 @@ app.post('/login', async (req, res) => {
     req.session.token = token;
     req.session.user = user;
 
-    if (user.role === 'superadmin') {
-      return res.redirect('/superadmin');
-    } else if (user.role === 'admin') {
-      return res.redirect('/admin');
-    } else if (user.role === 'user') {
-      return res.redirect('/user');
-    }
-
+    return res.redirect('/');
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
 // Route untuk dashboard superadmin
-app.get('/superadmin', (req, res) => {
-  if (!req.session.user || req.session.user.role !== 'superadmin') {
+app.get('/superadmin', checkLogin, (req, res) => {
+  if (req.session.user.role !== 'superadmin') {
     return res.redirect('/login');
   }
   res.render('index', { title: 'Super Admin Dashboard' });
 });
 
 // Route untuk dashboard admin
-app.get('/admin', (req, res) => {
-  if (!req.session.user || req.session.user.role !== 'admin') {
+app.get('/admin', checkLogin, (req, res) => {
+  if (req.session.user.role !== 'admin') {
     return res.redirect('/login');
   }
   res.render('admin', { title: 'Admin Dashboard' });
 });
 
 // Route untuk dashboard user
-app.get('/user', (req, res) => {
-  if (!req.session.user || req.session.user.role !== 'user') {
+app.get('/user', checkLogin, (req, res) => {
+  if (req.session.user.role !== 'user') {
     return res.redirect('/login');
   }
   res.render('user', { title: 'User Dashboard' });
@@ -117,80 +145,108 @@ app.get('/logout', (req, res) => {
 });
 
 // Route untuk halaman users (hanya diakses oleh admin)
-app.get('/users', async (req, res) => {
-    try {
-      const usersResult = await pool.query('SELECT id, name, email, divisi, phone FROM users');
-      const users = usersResult.rows.map(user => ({
-        ...user,
-        generatedPassword: 'password_placeholder' // Ganti dengan logika untuk mendapatkan password asli
-      }));
-      res.render('users/index', { users });
-    } catch (error) {
-      console.error('Error fetching users', error.stack);
-      res.status(500).send('Server Error');
-    }
-  });
-  
-
-// Route untuk menambahkan user dengan password yang di-generate otomatis
-app.post('/users/add', async (req, res) => {
-    if (!req.session.user || req.session.user.role !== 'admin') {
-      return res.redirect('/login');
-    }
-  
-    const { name, email, divisi, phone } = req.body;
-  
-    // Generate password secara otomatis
-    const generatedPassword = Math.random().toString(36).slice(-8);
-    const hashedPassword = bcrypt.hashSync(generatedPassword, 10);
-  
-    try {
-      // Query untuk menambahkan user ke database
-      const result = await pool.query(
-        'INSERT INTO users (name, email, password, role, divisi, phone) VALUES ($1, $2, $3, $4, $5, $6)',
-        [name, email, hashedPassword, 'user', divisi, phone]
-      );
-  
-      console.log(`Rows inserted: ${result.rowCount}`);
-      console.log(`User created with password: ${generatedPassword}`);
-      
-      res.redirect('/users');
-    } catch (error) {
-      console.error('Error executing query', error.stack);
-      res.status(500).json({ error: error.message });
-    }
-  });
-  
-  
-
-// Route untuk mengedit user
-app.post('/users/edit/:id', async (req, res) => {
-  const { id } = req.params;
-  const { name, email, password, divisi, phone } = req.body;
+// Route untuk halaman users (hanya diakses oleh admin)
+app.get('/users', checkLogin, async (req, res) => {
+  if (req.session.user.role !== 'admin') {
+    return res.redirect('/login');
+  }
 
   try {
-    const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined;
-    const updateQuery = `UPDATE users SET 
-      name = $1, 
-      email = $2, 
-      ${hashedPassword ? 'password = $3,' : ''} 
-      divisi = $4, 
-      phone = $5 
-      WHERE id = $6`;
+    const usersResult = await pool.query(`
+      SELECT id, name, email, divisi, phone, image 
+      FROM users 
+      WHERE role NOT IN ('admin', 'superadmin') 
+      ORDER BY updated_at DESC
+    `);
+    
+    const users = usersResult.rows;
 
-    const queryParams = hashedPassword
-      ? [name, email, hashedPassword, divisi, phone, id]
-      : [name, email, divisi, phone, id];
+    res.render('users/index', { title: 'User Management', users });
+  } catch (error) {
+    console.error('Error fetching users', error.stack);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+// Route untuk menambahkan user dengan foto profil
+app.post('/users/add', checkLogin, upload.single('image'), async (req, res) => {
+  if (req.session.user.role !== 'admin') {
+    return res.redirect('/login');
+  }
+
+  const { name, email, divisi, phone } = req.body;
+  const image = req.file ? req.file.filename : 'default.jpg';
+
+  // Generate password secara otomatis
+  const generatedPassword = Math.random().toString(36).slice(-8);
+  const hashedPassword = bcrypt.hashSync(generatedPassword, 10);
+
+  try {
+    // Query untuk menambahkan user ke database
+    const result = await pool.query(
+      'INSERT INTO users (name, email, password, role, divisi, phone, image) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      [name, email, hashedPassword, 'user', divisi, phone, image]
+    );
+
+    console.log(`Rows inserted: ${result.rowCount}`);
+    console.log(`User created with password: ${generatedPassword}`);
+    
+    res.redirect('/users');
+  } catch (error) {
+    console.error('Error executing query', error.stack);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Route untuk mengedit user
+app.post('/users/edit/:id', checkLogin, upload.single('image'), async (req, res) => {
+  const { id } = req.params;
+  const { name, email, password, divisi, phone } = req.body;
+  const image = req.file ? req.file.filename : undefined;
+
+  try {
+    let updateQuery;
+    let queryParams;
+
+    if (password) {
+      const hashedPassword = bcrypt.hashSync(password, 10);
+      updateQuery = `
+        UPDATE users SET 
+        name = $1, 
+        email = $2, 
+        password = $3, 
+        divisi = $4, 
+        phone = $5, 
+        image = COALESCE($6, image),
+        updated_at = NOW()
+        WHERE id = $7
+      `;
+      queryParams = [name, email, hashedPassword, divisi, phone, image, id];
+    } else {
+      updateQuery = `
+        UPDATE users SET 
+        name = $1, 
+        email = $2, 
+        divisi = $3, 
+        phone = $4, 
+        image = COALESCE($5, image),
+        updated_at = NOW()
+        WHERE id = $6
+      `;
+      queryParams = [name, email, divisi, phone, image, id];
+    }
 
     await pool.query(updateQuery, queryParams);
     res.redirect('/users');
   } catch (error) {
+    console.error('Error executing query', error.stack);
     res.status(500).json({ error: error.message });
   }
 });
 
 // Route untuk menghapus user
-app.post('/users/delete/:id', async (req, res) => {
+app.post('/users/delete/:id', checkLogin, async (req, res) => {
   const { id } = req.params;
 
   try {
