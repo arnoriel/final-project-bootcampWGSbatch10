@@ -1,0 +1,5 @@
+Day 3 Target:
+
+- Fix bug and add feature for Users CRUD (add Image(new), updated_at and created_at to make sure new/updated user show on top of page, show only users role)
+- Layouts view for Admin in BE
+- Added Validator
