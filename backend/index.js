@@ -8,21 +8,19 @@ const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
+const { body, validationResult } = require('express-validator');
 
 const app = express();
 const PORT = 3000;
 
-// Set view engine menjadi EJS
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
 
-// Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 
-// Konfigurasi session
 app.use(session({
   secret: 'AsdgaSdagstdw-1h012hdsak',
   resave: false,
@@ -30,7 +28,6 @@ app.use(session({
   cookie: { secure: false }
 }));
 
-// Middleware untuk cek login
 function checkLogin(req, res, next) {
   if (!req.session.user) {
     return res.redirect('/login');
@@ -38,31 +35,26 @@ function checkLogin(req, res, next) {
   next();
 }
 
-// Konfigurasi multer untuk upload gambar
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = './public/uploads/';
-    // Buat folder jika belum ada
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Nama file unik
+    cb(null, Date.now() + path.extname(file.originalname));
   }
 });
 
 const upload = multer({ storage: storage });
 
-// Route utama untuk mengecek apakah user sudah login atau belum
 app.get('/', (req, res) => {
-  // Cek apakah user sudah login atau belum
   if (!req.session.user) {
     return res.redirect('/login');
   }
 
-  // Redirect ke halaman sesuai role
   const userRole = req.session.user.role;
   if (userRole === 'superadmin') {
     return res.redirect('/superadmin');
@@ -73,16 +65,13 @@ app.get('/', (req, res) => {
   }
 });
 
-// Route untuk halaman login
 app.get('/login', (req, res) => {
-  // Jika sudah login, redirect ke dashboard sesuai role
   if (req.session.user) {
     return res.redirect('/');
   }
   res.render('login', { title: 'Login' });
 });
 
-// Route untuk memproses login
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -110,7 +99,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Route untuk dashboard superadmin
 app.get('/superadmin', checkLogin, (req, res) => {
   if (req.session.user.role !== 'superadmin') {
     return res.redirect('/login');
@@ -118,7 +106,6 @@ app.get('/superadmin', checkLogin, (req, res) => {
   res.render('index', { title: 'Super Admin Dashboard' });
 });
 
-// Route untuk dashboard admin
 app.get('/admin', checkLogin, (req, res) => {
   if (req.session.user.role !== 'admin') {
     return res.redirect('/login');
@@ -126,7 +113,6 @@ app.get('/admin', checkLogin, (req, res) => {
   res.render('admin', { title: 'Admin Dashboard' });
 });
 
-// Route untuk dashboard user
 app.get('/user', checkLogin, (req, res) => {
   if (req.session.user.role !== 'user') {
     return res.redirect('/login');
@@ -134,7 +120,6 @@ app.get('/user', checkLogin, (req, res) => {
   res.render('user', { title: 'User Dashboard' });
 });
 
-// Route untuk logout
 app.get('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) {
@@ -144,8 +129,6 @@ app.get('/logout', (req, res) => {
   });
 });
 
-// Route untuk halaman users (hanya diakses oleh admin)
-// Route untuk halaman users (hanya diakses oleh admin)
 app.get('/users', checkLogin, async (req, res) => {
   if (req.session.user.role !== 'admin') {
     return res.redirect('/login');
@@ -160,30 +143,55 @@ app.get('/users', checkLogin, async (req, res) => {
     `);
     
     const users = usersResult.rows;
-
-    res.render('users/index', { title: 'User Management', users });
+    res.render('users/index', { title: 'User Management', users, errors: [] });
   } catch (error) {
     console.error('Error fetching users', error.stack);
     res.status(500).send('Server Error');
   }
 });
 
+app.post('/users/add', 
+  checkLogin, 
+  upload.single('image'), 
+  [
+    body('email')
+      .isEmail()
+      .withMessage('Email tidak valid')
+      .matches(/^[\w.+\-]+@gmail\.com$/)
+      .withMessage('Email harus menggunakan domain gmail.com'),
+    body('phone')
+      .matches(/^(\+62|0)[0-9]{9,}$/)
+      .withMessage('Nomor telepon tidak valid, harus +62 atau 0')
+  ], 
+  async (req, res) => {
 
-// Route untuk menambahkan user dengan foto profil
-app.post('/users/add', checkLogin, upload.single('image'), async (req, res) => {
   if (req.session.user.role !== 'admin') {
     return res.redirect('/login');
+  }
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).render('users/index', { 
+      title: 'User Management', 
+      users: [], 
+      errors: errors.array(), 
+      data: {
+        name: req.body.name,
+        email: req.body.email,
+        divisi: req.body.divisi,
+        phone: req.body.phone,
+      },
+      showModal: true // Flag to show the modal
+    });
   }
 
   const { name, email, divisi, phone } = req.body;
   const image = req.file ? req.file.filename : 'default.jpg';
 
-  // Generate password secara otomatis
   const generatedPassword = Math.random().toString(36).slice(-8);
   const hashedPassword = bcrypt.hashSync(generatedPassword, 10);
 
   try {
-    // Query untuk menambahkan user ke database
     const result = await pool.query(
       'INSERT INTO users (name, email, password, role, divisi, phone, image) VALUES ($1, $2, $3, $4, $5, $6, $7)',
       [name, email, hashedPassword, 'user', divisi, phone, image]
@@ -191,19 +199,52 @@ app.post('/users/add', checkLogin, upload.single('image'), async (req, res) => {
 
     console.log(`Rows inserted: ${result.rowCount}`);
     console.log(`User created with password: ${generatedPassword}`);
-    
+
     res.redirect('/users');
   } catch (error) {
     console.error('Error executing query', error.stack);
-    res.status(500).json({ error: error.message });
+    res.status(500).render('users/index', { 
+      title: 'User Management', 
+      users: [], 
+      errors: [{ msg: 'Terjadi kesalahan pada server. Silakan coba lagi.' }],
+      data: {
+        name,
+        email,
+        divisi,
+        phone,
+      },
+      showModal: true // Flag to show the modal
+    });
   }
 });
 
-// Route untuk mengedit user
-app.post('/users/edit/:id', checkLogin, upload.single('image'), async (req, res) => {
+
+app.post('/users/edit/:id', 
+  checkLogin, 
+  upload.single('image'), 
+  [
+    body('email')
+      .isEmail()
+      .withMessage('Email tidak valid')
+      .matches(/^[\w.+\-]+@gmail\.com$/)
+      .withMessage('Email harus menggunakan domain gmail.com'),
+    body('phone')
+      .matches(/^(\+62|0)[0-9]{9,}$/)
+      .withMessage('Nomor telepon tidak valid, harus +62 atau 0')
+  ],
+  async (req, res) => {
   const { id } = req.params;
   const { name, email, password, divisi, phone } = req.body;
   const image = req.file ? req.file.filename : undefined;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).render('users/index', { 
+      title: 'User Management', 
+      users: [], 
+      errors: errors.array() 
+    });
+  }
 
   try {
     let updateQuery;
@@ -245,7 +286,6 @@ app.post('/users/edit/:id', checkLogin, upload.single('image'), async (req, res)
   }
 });
 
-// Route untuk menghapus user
 app.post('/users/delete/:id', checkLogin, async (req, res) => {
   const { id } = req.params;
 
@@ -257,7 +297,6 @@ app.post('/users/delete/:id', checkLogin, async (req, res) => {
   }
 });
 
-// Mulai server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

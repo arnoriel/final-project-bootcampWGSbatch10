@@ -12,7 +12,6 @@
             padding: 0;
             display: flex;
         }
-
         .sidebar {
             width: 250px;
             height: 100vh;
@@ -20,12 +19,10 @@
             padding: 20px;
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
         }
-
         .sidebar h2 {
             font-size: 20px;
             margin-bottom: 20px;
         }
-
         .sidebar a {
             display: block;
             color: #333;
@@ -33,22 +30,18 @@
             text-decoration: none;
             font-weight: bold;
         }
-
         .sidebar a:hover {
             background-color: #ddd;
             padding-left: 10px;
         }
-
         .content {
             flex-grow: 1;
             padding: 20px;
         }
-
         .content h1 {
             font-size: 28px;
             margin-bottom: 20px;
         }
-
         .content a.btn {
             display: inline-block;
             padding: 10px 20px;
@@ -58,7 +51,6 @@
             border-radius: 5px;
             font-size: 16px;
         }
-
         .content a.btn:hover {
             background-color: #0056b3;
         }
@@ -77,6 +69,16 @@
         <div class="container mt-5">
             <h1>Manajemen Karyawan</h1>
             <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addUserModal">Add User</button>
+
+            <!-- Display error messages -->
+            <% if (errors && errors.length > 0) { %>
+                <div class="alert alert-danger">
+                    <% errors.forEach(error => { %>
+                        <p><%= error.msg %></p>
+                    <% }) %>
+                </div>
+            <% } %>
+
             <table class="table table-bordered">
                 <thead>
                     <tr>
@@ -124,6 +126,13 @@
                                 <div class="modal-body">
                                     <form action="/users/edit/<%= user.id %>" method="POST" enctype="multipart/form-data">
                                         <div class="mb-3">
+                                            <label for="image<%= user.id %>" class="form-label">Profile Image</label>
+                                            <input type="file" class="form-control" id="image<%= user.id %>" name="image">
+                                            <% if (user.image) { %>
+                                                <p>Current Image: <%= user.image %></p>
+                                            <% } %>
+                                        </div>
+                                        <div class="mb-3">
                                             <label for="name<%= user.id %>" class="form-label">Name</label>
                                             <input type="text" class="form-control" id="name<%= user.id %>" name="name" value="<%= user.name %>">
                                         </div>
@@ -138,12 +147,12 @@
                                         <div class="mb-3">
                                             <label for="phone<%= user.id %>" class="form-label">Phone</label>
                                             <input type="text" class="form-control" id="phone<%= user.id %>" name="phone" value="<%= user.phone %>">
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="image<%= user.id %>" class="form-label">Profile Image</label>
-                                            <input type="file" class="form-control" id="image<%= user.id %>" name="image">
-                                            <% if (user.image) { %>
-                                                <p>Current Image: <%= user.image %></p>
+                                            <% if (errors && errors.length > 0) { %>
+                                                <% errors.forEach(error => { %>
+                                                    <% if (error.param === 'phone') { %>
+                                                        <div class="text-danger"><%= error.msg %></div>
+                                                    <% } %>
+                                                <% }) %>
                                             <% } %>
                                         </div>
                                         <button type="submit" class="btn btn-primary">Save changes</button>
@@ -192,11 +201,15 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addUserModalLabel">Add User</h5>
+                    <h5 class="modal-title" id="addUserModalLabel">Add Karyawan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form action="/users/add" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Profile Image</label>
+                            <input type="file" class="form-control" id="image" name="image">
+                        </div>
                         <div class="mb-3">
                             <label for="name" class="form-label">Name</label>
                             <input type="text" class="form-control" id="name" name="name" required>
@@ -212,10 +225,13 @@
                         <div class="mb-3">
                             <label for="phone" class="form-label">Phone</label>
                             <input type="text" class="form-control" id="phone" name="phone" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="image" class="form-label">Profile Image</label>
-                            <input type="file" class="form-control" id="image" name="image">
+                            <% if (errors && errors.length > 0) { %>
+                                <% errors.forEach(error => { %>
+                                    <% if (error.param === 'phone') { %>
+                                        <div class="text-danger"><%= error.msg %></div>
+                                    <% } %>
+                                <% }) %>
+                            <% } %>
                         </div>
                         <button type="submit" class="btn btn-primary">Add User</button>
                     </form>
@@ -223,6 +239,7 @@
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
