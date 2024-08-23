@@ -1,0 +1,5 @@
+Day 4 Target
+
+- Fix Validator Message (Failed due to Reset of the Project)
+- Reset Project
+- Install and Initialization Project for Backend (Node.Js), Frontend (ReactJs).
