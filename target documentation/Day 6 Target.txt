@@ -1,0 +1,7 @@
+Day 6 Target:
+
+- Install Nodemon
+- Login and Register Routed
+- Superadmin, Admin, and Employee pages
+- Layouts for Superadmin, Admin, and Employee
+- Safety Login Session
