@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import './Auth.css'; // Tambahkan CSS untuk styling
+import { useNavigate } from 'react-router-dom';
+import './Auth.css';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -17,7 +19,23 @@ function Login() {
         body: JSON.stringify({ email, password }),
       });
       const data = await response.json();
-      alert(data.message);
+
+      if (response.ok) {
+        // Simpan token dan role
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', data.role);
+
+        // Redirect sesuai role
+        if (data.role === 'superadmin') {
+          navigate('/superadmin');
+        } else if (data.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/employee');
+        }
+      } else {
+        alert(data.message);
+      }
     } catch (error) {
       console.error('Error:', error);
     }

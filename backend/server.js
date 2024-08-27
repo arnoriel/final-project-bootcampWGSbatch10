@@ -67,22 +67,20 @@ app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Find the user by email
         const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (user.rows.length === 0) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // Compare the password
         const isMatch = await bcrypt.compare(password, user.rows[0].password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // Generate JWT token
         const token = jwt.sign({ id: user.rows[0].id, email: user.rows[0].email, role: user.rows[0].role }, 'your_jwt_secret', { expiresIn: '1h' });
 
-        res.json({ message: 'Login successful', token });
+        // Kirim role bersama dengan token
+        res.json({ message: 'Login successful', token, role: user.rows[0].role });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
