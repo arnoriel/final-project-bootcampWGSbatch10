@@ -1,0 +1,42 @@
+/* frontend/src/pages/Welcome.css */
+
+.welcome-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    background-color: #1e3a8a; /* Warna biru navy */
+    color: #ffffff;
+  }
+  
+  .welcome-container h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+  }
+  
+  .welcome-container p {
+    font-size: 1.5rem;
+    margin-bottom: 40px;
+  }
+  
+  .welcome-buttons {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .welcome-button {
+    padding: 10px 20px;
+    background-color: #3b82f6; /* Warna biru terang */
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .welcome-button:hover {
+    background-color: #2563eb; /* Warna biru yang lebih gelap saat hover */
+  }
+  
