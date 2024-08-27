@@ -1,9 +1,17 @@
 // frontend/src/pages/layouts/SuperadminSB.js
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Sidebar.css'; // Pastikan Anda memiliki file CSS untuk styling
 
 function SuperadminSB() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    navigate('/login');
+  };
+
   return (
     <div className="sidebar">
       <ul>
@@ -11,6 +19,7 @@ function SuperadminSB() {
         <li><Link to="/manage-admins">Manage Admins</Link></li>
         <li><Link to="/manage-employees">Manage Employees</Link></li>
       </ul>
+      <button onClick={handleLogout} className="logout-button">Logout</button>
     </div>
   );
 }

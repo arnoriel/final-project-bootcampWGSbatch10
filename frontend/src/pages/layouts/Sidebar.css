@@ -46,3 +46,21 @@
     font-weight: bold;
   }
   
+  .logout-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: transparent; /* Hapus background */
+    color: #ffffff; /* Warna teks putih */
+    border: none; /* Hapus border */
+    cursor: pointer;
+    width: auto; /* Lebar mengikuti teks */
+    text-align: center;
+    transition: color 0.3s;
+    font-size: 16px; /* Ukuran font */
+  }
+  
+  .logout-button:hover {
+    color: #f44336; /* Warna teks berubah menjadi merah saat hover */
+    background-color: transparent; /* Tetap transparan saat hover */
+  }
+  
