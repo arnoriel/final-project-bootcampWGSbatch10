@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './Auth.css'; // Tambahkan CSS untuk styling
 
 function Register() {
   const [form, setForm] = useState({
@@ -8,7 +9,7 @@ function Register() {
     phone: '',
     division: '',
     images: null,
-    role: 'employee' // Set default role ke 'employee'
+    role: 'employee'
   });
 
   const handleRegisterChange = (e) => {
@@ -36,7 +37,7 @@ function Register() {
     formData.append('phone', form.phone);
     formData.append('division', form.division);
     formData.append('image', form.images);
-    formData.append('role', form.role); // Tambahkan role ke formData
+    formData.append('role', form.role);
 
     try {
       const response = await fetch('http://localhost:5000/api/register', {
@@ -51,24 +52,86 @@ function Register() {
   };
 
   return (
-    <div>
+    <div className="auth-container">
       <h2>Register</h2>
-      <form onSubmit={handleRegister}>
-        <input type="text" name="name" placeholder="Name" value={form.name} onChange={handleRegisterChange} />
-        <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleRegisterChange} />
-        <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleRegisterChange} />
-        <input type="text" name="phone" placeholder="Phone" value={form.phone} onChange={handleRegisterChange} />
-        <input type="text" name="division" placeholder="Division" value={form.division} onChange={handleRegisterChange} />
-        <input type="file" name="images" accept="image/*" onChange={handleRegisterChange} />
-        
-        {/* Pilihan Role */}
-        <select name="role" value={form.role} onChange={handleRegisterChange}>
-          <option value="employee">Employee</option>
-          <option value="admin">Admin</option>
-          <option value="superadmin">Superadmin</option>
-        </select>
-
-        <button type="submit">Register</button>
+      <form onSubmit={handleRegister} className="auth-form">
+        <div className="form-group">
+          <label>Name</label>
+          <input 
+            type="text" 
+            name="name" 
+            placeholder="Enter your name" 
+            value={form.name} 
+            onChange={handleRegisterChange} 
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Email</label>
+          <input 
+            type="email" 
+            name="email" 
+            placeholder="Enter your email" 
+            value={form.email} 
+            onChange={handleRegisterChange} 
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Password</label>
+          <input 
+            type="password" 
+            name="password" 
+            placeholder="Enter your password" 
+            value={form.password} 
+            onChange={handleRegisterChange} 
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Phone</label>
+          <input 
+            type="text" 
+            name="phone" 
+            placeholder="Enter your phone number" 
+            value={form.phone} 
+            onChange={handleRegisterChange} 
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Division</label>
+          <input 
+            type="text" 
+            name="division" 
+            placeholder="Enter your division" 
+            value={form.division} 
+            onChange={handleRegisterChange} 
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Profile Image</label>
+          <input 
+            type="file" 
+            name="images" 
+            accept="image/*" 
+            onChange={handleRegisterChange} 
+          />
+        </div>
+        <div className="form-group">
+          <label>Role</label>
+          <select 
+            name="role" 
+            value={form.role} 
+            onChange={handleRegisterChange}
+          >
+            <option value="employee">Employee</option>
+            <option value="admin">Admin</option>
+            <option value="superadmin">Superadmin</option>
+          </select>
+        </div>
+        <button type="submit" className="auth-button">Register</button>
       </form>
     </div>
   );
