@@ -1,5 +1,8 @@
+// frontend/src/pages/Employee.js
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import EmployeeSB from './layouts/EmployeeSB'; // import sidebar yang sudah dibuat
+import './layouts/MainContent.css'; // import CSS untuk konten utama
 
 function Employee() {
   const navigate = useNavigate();
@@ -12,8 +15,11 @@ function Employee() {
 
   return (
     <div>
-      <h1>Welcome, Employee</h1>
-      <button onClick={handleLogout}>Logout</button>
+      <EmployeeSB /> {/* Memanggil Sidebar */}
+      <div className="main-content">
+        <h1>Welcome, Employee</h1>
+        <button onClick={handleLogout}>Logout</button>
+      </div>
     </div>
   );
 }
