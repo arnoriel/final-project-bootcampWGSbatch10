@@ -5,6 +5,7 @@ import './Auth.css';
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(''); // State untuk menyimpan pesan error
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -34,16 +35,22 @@ function Login() {
           navigate('/employee');
         }
       } else {
-        alert(data.message);
+        setError(data.message); // Simpan pesan error di state
       }
     } catch (error) {
       console.error('Error:', error);
+      setError('Something went wrong. Please try again.'); // Pesan error default
     }
   };
 
   return (
     <div className="auth-container">
       <h2>Login</h2>
+      {error && (
+        <div className="danger-card">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleLogin} className="auth-form">
         <div className="form-group">
           <label>Email</label>
