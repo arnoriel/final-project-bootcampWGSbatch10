@@ -1,15 +1,39 @@
 // frontend/src/pages/Admin.js
-import React from 'react';
-import AdminSB from './layouts/AdminSB'; // import sidebar yang sudah dibuat
-import './layouts/MainContent.css'; // import CSS untuk konten utama
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AdminSB from './layouts/AdminSB'; // Import sidebar
+import './layouts/MainContent.css'; // Import CSS untuk konten utama
 
 function Admin() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+
+    // Jika token tidak ada, arahkan ke login
+    if (!token) {
+      navigate('/login', { replace: true });
+    }
+
+    // Cegah user kembali ke halaman setelah logout dengan menonaktifkan tombol back
+    window.history.replaceState(null, null, window.location.href);
+    window.addEventListener('popstate', () => {
+      if (!localStorage.getItem('token')) {
+        navigate('/login', { replace: true });
+      }
+    });
+
+    // Cleanup event listener saat komponen unmount
+    return () => {
+      window.removeEventListener('popstate', () => {});
+    };
+  }, [navigate]);
+
   return (
     <div>
-      <AdminSB /> {/* Memanggil Sidebar */}
+      <AdminSB />
       <div className="main-content">
         <h1>Welcome, Admin</h1>
-        {/* Tombol Logout dihapus dari sini */}
       </div>
     </div>
   );

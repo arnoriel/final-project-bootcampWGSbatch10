@@ -7,16 +7,19 @@ function EmployeeSB() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    // Hapus token dan role dari localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('role');
-    navigate('/login');
+
+    // Arahkan ke halaman login
+    navigate('/login', { replace: true }); // replace: true untuk mencegah kembali ke halaman sebelumnya
   };
 
   return (
     <div className="sidebar">
       <ul>
         <li><Link to="/employee-dashboard">Dashboard</Link></li>
-        <li><Link to="/manage-employees">Manage Employees</Link></li>
+        <li><Link to="/attendance">Attendance</Link></li>
       </ul>
       <button onClick={handleLogout} className="logout-button">Logout</button>
     </div>

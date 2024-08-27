@@ -6,13 +6,13 @@ import Login from './pages/Login';
 import Superadmin from './pages/Superadmin';
 import Admin from './pages/Admin';
 import Employee from './pages/Employee';
-import Welcome from './pages/Welcome'; // Import halaman Welcome
+import Welcome from './pages/Welcome'; // Import halaman welcome
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Welcome />} /> {/* Ubah rute "/" ke halaman Welcome */}
+        <Route path="/" element={<Welcome />} /> {/* Ubah rute default ke halaman welcome */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/superadmin" element={<Superadmin />} />

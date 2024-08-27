@@ -7,9 +7,12 @@ function AdminSB() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    // Hapus token dan role dari localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('role');
-    navigate('/login');
+
+    // Arahkan ke halaman login
+    navigate('/login', { replace: true }); // replace: true untuk mencegah kembali ke halaman sebelumnya
   };
 
   return (

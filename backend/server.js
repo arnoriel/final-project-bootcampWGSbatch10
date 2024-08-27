@@ -77,9 +77,12 @@ app.post('/api/login', async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        const token = jwt.sign({ id: user.rows[0].id, email: user.rows[0].email, role: user.rows[0].role }, 'your_jwt_secret', { expiresIn: '1h' });
+        const token = jwt.sign(
+            { id: user.rows[0].id, email: user.rows[0].email, role: user.rows[0].role },
+            'your_jwt_secret',
+            { expiresIn: '1h' }
+        );
 
-        // Kirim role bersama dengan token
         res.json({ message: 'Login successful', token, role: user.rows[0].role });
     } catch (error) {
         console.error(error);
