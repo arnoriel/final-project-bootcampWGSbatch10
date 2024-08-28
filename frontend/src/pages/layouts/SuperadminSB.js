@@ -18,8 +18,8 @@ function SuperadminSB() {
   return (
     <div className="sidebar">
       <ul>
-        <li><Link to="/superadmin-dashboard">Dashboard</Link></li>
-        <li><Link to="/manage-admins">Manage Admins</Link></li>
+        <li><Link to="/superadmin">Dashboard</Link></li>
+        <li><Link to="/manageadmins">Manage Admins</Link></li>
         <li><Link to="/manage-employees">Manage Employees</Link></li>
       </ul>
       <button onClick={handleLogout} className="logout-button">Logout</button>

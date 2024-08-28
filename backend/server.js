@@ -90,6 +90,57 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+app.get('/api/admins', async (req, res) => {
+    try {
+        const admins = await pool.query("SELECT * FROM users WHERE role = 'admin'");
+        res.status(200).json(admins.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+app.put('/api/admins/:id', upload.single('image'), async (req, res) => {
+    const { id } = req.params;
+    const { name, email, phone, division } = req.body;
+    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+    try {
+        const admin = await pool.query('SELECT * FROM users WHERE id = $1 AND role = $2', [id, 'admin']);
+        if (admin.rows.length === 0) {
+            return res.status(404).json({ message: 'Admin not found' });
+        }
+
+        await pool.query(
+            'UPDATE users SET name = $1, email = $2, phone = $3, division = $4, images = $5 WHERE id = $6',
+            [name, email, phone, division, imagePath, id]
+        );
+
+        res.status(200).json({ message: 'Admin updated successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+app.delete('/api/admins/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const admin = await pool.query('SELECT * FROM users WHERE id = $1 AND role = $2', [id, 'admin']);
+        if (admin.rows.length === 0) {
+            return res.status(404).json({ message: 'Admin not found' });
+        }
+
+        await pool.query('DELETE FROM users WHERE id = $1', [id]);
+
+        res.status(200).json({ message: 'Admin deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
