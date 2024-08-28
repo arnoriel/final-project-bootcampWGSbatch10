@@ -11,19 +11,28 @@ import Employee from './pages/Employee';
 import Welcome from './pages/Welcome';
 import ManageAdmins from './pages/Manage-admins';
 import ManageEmployees from './pages/Manage-employees';
+import ProtectedRoute from './ProtectedRoute'; // Import the ProtectedRoute component
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Welcome />} /> {/* Ubah rute default ke halaman welcome */}
+        <Route path="/" element={<Welcome />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/superadmin" element={<Superadmin />} />
         <Route path="/admin" element={<Admin />} />
+       
         <Route path="/employee" element={<Employee />} />
-        <Route path="/manageadmins" element={<ManageAdmins />} />
-        <Route path="/manage-employees" element={<ManageEmployees />} />
+        <Route 
+          path="/manageadmins" 
+          element={
+            <ProtectedRoute role="superadmin">
+              <ManageAdmins />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/manageemployees" element={<ManageEmployees />} />
       </Routes>
     </Router>
   );
