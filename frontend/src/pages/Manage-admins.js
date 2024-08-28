@@ -13,7 +13,7 @@ const ManageAdmins = () => {
         division: '',
         image: null,
     });
-
+    const [editingAdminId, setEditingAdminId] = useState(null); // State untuk menyimpan ID admin yang sedang di-edit
     const [showModal, setShowModal] = useState(false); // State untuk mengontrol modal
 
     useEffect(() => {
@@ -50,14 +50,14 @@ const ManageAdmins = () => {
         try {
             await axios.post('http://localhost:5000/api/register', formData);
             fetchAdmins();
-            setNewAdmin({ name: '', email: '', phone: '', division: '', image: null });
+            resetForm();
             setShowModal(false); // Tutup modal setelah menambahkan admin
         } catch (error) {
             console.error(error);
         }
     };
 
-    const updateAdmin = async (id) => {
+    const updateAdmin = async () => {
         const formData = new FormData();
         formData.append('name', newAdmin.name);
         formData.append('email', newAdmin.email);
@@ -66,8 +66,10 @@ const ManageAdmins = () => {
         formData.append('image', newAdmin.image);
 
         try {
-            await axios.put(`http://localhost:5000/api/admins/${id}`, formData);
+            await axios.put(`http://localhost:5000/api/admins/${editingAdminId}`, formData);
             fetchAdmins();
+            resetForm();
+            setShowModal(false); // Tutup modal setelah mengupdate admin
         } catch (error) {
             console.error(error);
         }
@@ -82,24 +84,41 @@ const ManageAdmins = () => {
         }
     };
 
+    const handleEditClick = (admin) => {
+        setNewAdmin({
+            name: admin.name,
+            email: admin.email,
+            phone: admin.phone,
+            division: admin.division,
+            image: null, // Kosongkan image, user bisa upload ulang jika ingin mengganti
+        });
+        setEditingAdminId(admin.id);
+        setShowModal(true);
+    };
+
+    const resetForm = () => {
+        setNewAdmin({ name: '', email: '', phone: '', division: '', image: null });
+        setEditingAdminId(null);
+    };
+
     return (
         <div>
-            <h2>Manage Admins</h2>
             <SuperadminSB />
             <div className="main-content">
-                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                <h2>Manage Admins</h2>
+                <button className="btn btn-primary mb-4" onClick={() => setShowModal(true)}>
                     Add Admin
                 </button>
 
                 {/* Modal Bootstrap */}
-                <div className={`modal ${showModal ? 'd-block' : 'd-none'}`} tabIndex="-1">
-                    <div className="modal-dialog">
+                <div className={`modal fade ${showModal ? 'show d-block' : ''}`} tabIndex="-1" style={{ backgroundColor: showModal ? 'rgba(0,0,0,0.5)' : '' }}>
+                    <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                             <div className="modal-header">
-                                <h5 className="modal-title">Add New Admin</h5>
-                                <button type="button" className="close" onClick={() => setShowModal(false)}>
-                                    <span>&times;</span>
-                                </button>
+                                <h5 className="modal-title">
+                                    {editingAdminId ? 'Update Admin' : 'Add New Admin'}
+                                </h5>
+                                <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
                             </div>
                             <div className="modal-body">
                                 <input
@@ -145,23 +164,28 @@ const ManageAdmins = () => {
                                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
                                     Cancel
                                 </button>
-                                <button type="button" className="btn btn-primary" onClick={addAdmin}>
-                                    Add Admin
+                                <button type="button" className="btn btn-primary" onClick={editingAdminId ? updateAdmin : addAdmin}>
+                                    {editingAdminId ? 'Update Admin' : 'Add Admin'}
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <ul>
+                <ul className="list-group">
                     {admins.map((admin) => (
-                        <li key={admin.id}>
-                            <img src={`http://localhost:5000${admin.images}`} alt={admin.name} width="50" />
-                            <p>
-                                {admin.name} - {admin.email}
-                            </p>
-                            <button onClick={() => updateAdmin(admin.id)}>Update</button>
-                            <button onClick={() => deleteAdmin(admin.id)}>Delete</button>
+                        <li key={admin.id} className="list-group-item d-flex justify-content-between align-items-center">
+                            <div className="d-flex align-items-center">
+                                <img src={`http://localhost:5000${admin.images}`} alt={admin.name} width="50" className="me-3" />
+                                <div>
+                                    <p className="mb-1 fw-bold">{admin.name} | {admin.division}</p>
+                                    <p className="mb-0">{admin.email}</p>
+                                </div>
+                            </div>
+                            <div>
+                                <button className="btn btn-sm btn-outline-primary me-2" onClick={() => handleEditClick(admin)}>Update</button>
+                                <button className="btn btn-sm btn-outline-danger" onClick={() => deleteAdmin(admin.id)}>Delete</button>
+                            </div>
                         </li>
                     ))}
                 </ul>

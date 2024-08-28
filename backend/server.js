@@ -50,8 +50,8 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
     const { name, email, phone, division, role } = req.body;
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
     
-    const userRole = role || 'employee'; // Default role ke 'employee' jika tidak ada input role
-    const password = generateRandomPassword(); // Generate password
+    const userRole = role || 'employee';
+    const password = generateRandomPassword();
 
     try {
         const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -62,11 +62,12 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         await pool.query(
-            'INSERT INTO users (name, email, password, phone, division, images, role) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+            `INSERT INTO users (name, email, password, phone, division, images, role, updated_at) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)`,
             [name, email, hashedPassword, phone, division, imagePath, userRole]
         );
 
-        console.log(`Admin created with email: ${email}, password: ${password}`); // Tampilkan password di console
+        console.log(`Admin created with email: ${email}, password: ${password}`);
 
         res.status(201).json({ message: 'Admin registered successfully' });
     } catch (error) {
@@ -105,7 +106,7 @@ app.post('/api/login', async (req, res) => {
 
 app.get('/api/admins', async (req, res) => {
     try {
-        const admins = await pool.query("SELECT * FROM users WHERE role = 'admin'");
+        const admins = await pool.query("SELECT * FROM users WHERE role = 'admin' ORDER BY updated_at DESC");
         res.status(200).json(admins.rows);
     } catch (error) {
         console.error(error);
@@ -125,7 +126,8 @@ app.put('/api/admins/:id', upload.single('image'), async (req, res) => {
         }
 
         await pool.query(
-            'UPDATE users SET name = $1, email = $2, phone = $3, division = $4, images = $5 WHERE id = $6',
+            `UPDATE users SET name = $1, email = $2, phone = $3, division = $4, images = $5, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = $6`,
             [name, email, phone, division, imagePath, id]
         );
 

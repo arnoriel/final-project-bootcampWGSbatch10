@@ -56,9 +56,10 @@ const seedUsers = async () => {
             // Hash the password
             const hashedPassword = await bcrypt.hash(user.password, 10);
 
-            // Insert the new user
+            // Insert the new user with current timestamp for updated_at
             await pool.query(
-                'INSERT INTO users (name, email, password, phone, division, role, images) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+                `INSERT INTO users (name, email, password, phone, division, role, images, updated_at) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
                 [user.name, user.email, hashedPassword, user.phone, user.division, user.role, user.images]
             );
 
