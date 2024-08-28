@@ -17,6 +17,11 @@ function EmployeeSB() {
 
   return (
     <div className="sidebar">
+      {/* Title at the top of the sidebar */}
+      <div className="sidebar-title">
+        MyOffice
+      </div>
+      
       <ul>
         <li><Link to="/employee-dashboard">Dashboard</Link></li>
         <li><Link to="/attendance">Attendance</Link></li>

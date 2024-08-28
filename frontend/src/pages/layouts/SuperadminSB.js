@@ -1,4 +1,3 @@
-// frontend/src/pages/layouts/SuperadminSB.js
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Sidebar.css'; // Pastikan Anda memiliki file CSS untuk styling
@@ -17,6 +16,11 @@ function SuperadminSB() {
 
   return (
     <div className="sidebar">
+      {/* Title at the top of the sidebar */}
+      <div className="sidebar-title">
+        MyOffice
+      </div>
+      
       <ul>
         <li><Link to="/superadmin">Dashboard</Link></li>
         <li><Link to="/manageadmins">Manage Admins</Link></li>

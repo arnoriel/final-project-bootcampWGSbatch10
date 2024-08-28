@@ -17,6 +17,11 @@ function AdminSB() {
 
   return (
     <div className="sidebar">
+      {/* Title at the top of the sidebar */}
+      <div className="sidebar-title">
+        MyOffice
+      </div>
+      
       <ul>
         <li><Link to="/admin-dashboard">Dashboard</Link></li>
         <li><Link to="/manage-employees">Manage Employees</Link></li>
