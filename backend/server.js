@@ -35,12 +35,23 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+// Generate random password
+const generateRandomPassword = () => {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+    let password = '';
+    for (let i = 0; i < 10; i++) { // Panjang password 10 karakter
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+};
+
 // Register user with image upload
 app.post('/api/register', upload.single('image'), async (req, res) => {
-    const { name, email, password, phone, division, role } = req.body; // Tambahkan 'role'
+    const { name, email, phone, division, role } = req.body;
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
     
     const userRole = role || 'employee'; // Default role ke 'employee' jika tidak ada input role
+    const password = generateRandomPassword(); // Generate password
 
     try {
         const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -53,9 +64,11 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
         await pool.query(
             'INSERT INTO users (name, email, password, phone, division, images, role) VALUES ($1, $2, $3, $4, $5, $6, $7)',
             [name, email, hashedPassword, phone, division, imagePath, userRole]
-        );        
+        );
 
-        res.status(201).json({ message: 'User registered successfully' });
+        console.log(`Admin created with email: ${email}, password: ${password}`); // Tampilkan password di console
+
+        res.status(201).json({ message: 'Admin registered successfully' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
