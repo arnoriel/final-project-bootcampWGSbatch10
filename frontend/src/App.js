@@ -3,7 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import Register from './pages/Register';
+// import Register from './pages/Register';
 import Login from './pages/Login';
 import Superadmin from './pages/Superadmin';
 import Admin from './pages/Admin';
@@ -18,7 +18,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Welcome />} />
-        <Route path="/register" element={<Register />} />
+        {/* <Route path="/register" element={<Register />} /> */}
         <Route path="/login" element={<Login />} />
         <Route path="/superadmin" element={<Superadmin />} />
         <Route path="/admin" element={<Admin />} />

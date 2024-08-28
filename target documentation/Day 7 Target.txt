@@ -1,0 +1,7 @@
+Day 7 Target:
+
+- Create CRUD Function for Admin role user
+- add more functionality in Admin CRUD
+- fixing add new users image bug
+- added protectedroute to make sure Manage Admins page is safe
+- Removing Register function
