@@ -1,7 +1,7 @@
 // frontend/src/pages/Superadmin.js
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SuperadminSB from './layouts/SuperadminSB'; // Import sidebar
+import Sidebar from './layouts/Sidebar'; // Import sidebar
 import './layouts/MainContent.css'; // Import CSS untuk konten utama
 
 function Superadmin() {
@@ -31,7 +31,7 @@ function Superadmin() {
 
   return (
     <div>
-      <SuperadminSB />
+      <Sidebar />
       <div className="main-content">
         <h1>Welcome, Superadmin</h1>
       </div>

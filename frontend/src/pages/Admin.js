@@ -1,7 +1,7 @@
 // frontend/src/pages/Admin.js
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AdminSB from './layouts/AdminSB'; // Import sidebar
+import Sidebar from './layouts/Sidebar'; // Import sidebar
 import './layouts/MainContent.css'; // Import CSS untuk konten utama
 
 function Admin() {
@@ -31,7 +31,7 @@ function Admin() {
 
   return (
     <div>
-      <AdminSB />
+      <Sidebar />
       <div className="main-content">
         <h1>Welcome, Admin</h1>
       </div>

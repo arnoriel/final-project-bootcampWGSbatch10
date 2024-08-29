@@ -62,21 +62,23 @@
 }
 
 .logout-button {
-  margin-top: auto; /* Push logout button to the bottom */
-  padding: 10px 20px;
-  background-color: transparent;
-  color: #ffffff; /* White text */
-  border: 2px solid #f44336; /* Red border */
-  border-radius: 25px; /* Rounded corners */
+  margin-top: 20px; /* Adjust to move button slightly up */
+  padding: 12px 25px;
+  background-color: transparent; /* Start with transparent background */
+  color: #f44336; /* Red text */
+  border: 2px solid #f44336; /* Red outline */
+  border-radius: 50px; /* Fully rounded button */
   cursor: pointer;
   width: 80%; /* Centered button with some padding */
   text-align: center;
-  transition: color 0.3s, background-color 0.3s, border-color 0.3s;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s; /* Smooth transition */
   font-size: 16px;
 }
 
 .logout-button:hover {
-  color: #f44336; /* Red text on hover */
-  background-color: rgba(244, 67, 54, 0.1); /* Light red background on hover */
-  border-color: #ffffff; /* Change border to white on hover */
+  background-color: #f44336; /* Red background on hover */
+  color: #ffffff; /* White text on hover */
+  border-color: #f44336; /* Maintain red border */
 }
+
+

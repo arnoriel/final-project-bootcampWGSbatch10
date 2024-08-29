@@ -117,12 +117,17 @@ app.get('/api/admins', async (req, res) => {
 app.put('/api/admins/:id', upload.single('image'), async (req, res) => {
     const { id } = req.params;
     const { name, email, phone, division } = req.body;
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+    let imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
     try {
         const admin = await pool.query('SELECT * FROM users WHERE id = $1 AND role = $2', [id, 'admin']);
         if (admin.rows.length === 0) {
             return res.status(404).json({ message: 'Admin not found' });
+        }
+
+        // Use existing image if no new file is uploaded
+        if (!imagePath) {
+            imagePath = admin.rows[0].images;
         }
 
         await pool.query(
@@ -137,6 +142,7 @@ app.put('/api/admins/:id', upload.single('image'), async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 app.delete('/api/admins/:id', async (req, res) => {
     const { id } = req.params;

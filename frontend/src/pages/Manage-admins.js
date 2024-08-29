@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import SuperadminSB from './layouts/SuperadminSB';
+import Sidebar from './layouts/Sidebar';
 import './layouts/MainContent.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -102,7 +102,7 @@ const ManageAdmins = () => {
             email: admin.email,
             phone: admin.phone,
             division: admin.division,
-            image: null,
+            image: admin.images, // Tetapkan URL gambar ke state
         });
         setShowUpdateModal(true);
     };
@@ -120,7 +120,7 @@ const ManageAdmins = () => {
 
     return (
         <div>
-            <SuperadminSB />
+            <Sidebar />
             <div className="main-content">
                 <h2>Manage Admins</h2>
                 <button className="btn btn-primary mb-4" onClick={() => setShowAddModal(true)}>
@@ -229,6 +229,12 @@ const ManageAdmins = () => {
                                     onChange={(e) => handleInputChange(e, setEditingAdmin)}
                                     className="form-control mb-2"
                                 />
+                              
+                                {editingAdmin.image && (
+                                    <div className="mb-2">
+                                        <img src={`http://localhost:5000${editingAdmin.image}`} alt="Admin" width="100" />
+                                    </div>
+                                )}
                                 <input
                                     type="file"
                                     name="image"
