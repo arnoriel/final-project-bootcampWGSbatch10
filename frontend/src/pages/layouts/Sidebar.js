@@ -1,34 +1,42 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import './Sidebar.css'; // Pastikan Anda memiliki file CSS untuk styling
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import './Sidebar.css';
 
 function Sidebar() {
   const navigate = useNavigate();
-  const role = localStorage.getItem('role'); // Mendapatkan peran dari localStorage
+  const location = useLocation(); // Menyediakan informasi tentang lokasi saat ini
+  const role = localStorage.getItem('role'); 
 
   const handleLogout = () => {
-    // Hapus token dan role dari localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('role');
-
-    // Arahkan ke halaman login
-    navigate('/login', { replace: true }); // replace: true untuk mencegah kembali ke halaman sebelumnya
+    navigate('/login', { replace: true });
   };
+
+  // Menentukan apakah path saat ini sama dengan path yang diinginkan
+  const isActive = (path) => location.pathname === path;
 
   return (
     <div className="sidebar">
-      {/* Title at the top of the sidebar */}
-      <div className="sidebar-title">
-        MyOffice
-      </div>
-      
+      <div className="sidebar-title">MyOffice</div>
       <ul>
-        <li><Link to={role === 'superadmin' ? '/superadmin' : '/admin'}>Dashboard</Link></li>
-        {/* Link ini hanya akan muncul jika perannya superadmin */}
+        <li>
+          <Link to={role === 'superadmin' ? '/superadmin' : '/admin'} className={isActive(role === 'superadmin' ? '/superadmin' : '/admin') ? 'active' : ''}>
+            Dashboard
+          </Link>
+        </li>
         {role === 'superadmin' && (
-          <li><Link to="/manageadmins">Manage Admins</Link></li>
+          <li>
+            <Link to="/manageadmins" className={isActive('/manageadmins') ? 'active' : ''}>
+              Manage Admins
+            </Link>
+          </li>
         )}
-        <li><Link to="/manageemployees">Manage Employees</Link></li>
+        <li>
+          <Link to="/manageemployees" className={isActive('/manageemployees') ? 'active' : ''}>
+            Manage Employees
+          </Link>
+        </li>
       </ul>
       <button onClick={handleLogout} className="logout-button">Logout</button>
     </div>
