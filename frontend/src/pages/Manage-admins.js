@@ -26,6 +26,7 @@ const ManageAdmins = () => {
 
     // Use ref to access the file input element
     const newAdminImageRef = useRef(null);
+    const editAdminImageRef = useRef(null);
 
     useEffect(() => {
         fetchAdmins();
@@ -74,7 +75,9 @@ const ManageAdmins = () => {
         formData.append('email', editingAdmin.email);
         formData.append('phone', editingAdmin.phone);
         formData.append('division', editingAdmin.division);
-        formData.append('image', editingAdmin.image);
+        if (editingAdmin.image instanceof File) {
+            formData.append('image', editingAdmin.image);
+        }
 
         try {
             await axios.put(`http://localhost:5000/api/admins/${editingAdmin.id}`, formData);
@@ -116,6 +119,9 @@ const ManageAdmins = () => {
 
     const resetEditingAdminForm = () => {
         setEditingAdmin({ id: null, name: '', email: '', phone: '', division: '', image: null });
+        if (editAdminImageRef.current) {
+            editAdminImageRef.current.value = null; // Clear the file input
+        }
     };
 
     return (
@@ -136,6 +142,7 @@ const ManageAdmins = () => {
                                 <button type="button" className="btn-close" onClick={() => setShowAddModal(false)}></button>
                             </div>
                             <div className="modal-body">
+                            <label>Name</label>
                                 <input
                                     type="text"
                                     name="name"
@@ -144,6 +151,7 @@ const ManageAdmins = () => {
                                     onChange={(e) => handleInputChange(e, setNewAdmin)}
                                     className="form-control mb-2"
                                 />
+                            <label>Email</label>
                                 <input
                                     type="email"
                                     name="email"
@@ -152,6 +160,7 @@ const ManageAdmins = () => {
                                     onChange={(e) => handleInputChange(e, setNewAdmin)}
                                     className="form-control mb-2"
                                 />
+                            <label>Phone</label>
                                 <input
                                     type="text"
                                     name="phone"
@@ -160,6 +169,7 @@ const ManageAdmins = () => {
                                     onChange={(e) => handleInputChange(e, setNewAdmin)}
                                     className="form-control mb-2"
                                 />
+                            <label>Division</label>
                                 <input
                                     type="text"
                                     name="division"
@@ -168,6 +178,7 @@ const ManageAdmins = () => {
                                     onChange={(e) => handleInputChange(e, setNewAdmin)}
                                     className="form-control mb-2"
                                 />
+                            <label>Image</label>
                                 <input
                                     type="file"
                                     name="image"
@@ -197,6 +208,7 @@ const ManageAdmins = () => {
                                 <button type="button" className="btn-close" onClick={() => setShowUpdateModal(false)}></button>
                             </div>
                             <div className="modal-body">
+                            <label>Name</label>
                                 <input
                                     type="text"
                                     name="name"
@@ -205,6 +217,7 @@ const ManageAdmins = () => {
                                     onChange={(e) => handleInputChange(e, setEditingAdmin)}
                                     className="form-control mb-2"
                                 />
+                            <label>Email</label>
                                 <input
                                     type="email"
                                     name="email"
@@ -213,6 +226,7 @@ const ManageAdmins = () => {
                                     onChange={(e) => handleInputChange(e, setEditingAdmin)}
                                     className="form-control mb-2"
                                 />
+                                <label>Phone</label>
                                 <input
                                     type="text"
                                     name="phone"
@@ -221,6 +235,7 @@ const ManageAdmins = () => {
                                     onChange={(e) => handleInputChange(e, setEditingAdmin)}
                                     className="form-control mb-2"
                                 />
+                                <label>Division</label>
                                 <input
                                     type="text"
                                     name="division"
@@ -229,17 +244,19 @@ const ManageAdmins = () => {
                                     onChange={(e) => handleInputChange(e, setEditingAdmin)}
                                     className="form-control mb-2"
                                 />
-                              
+                              <label>Image</label>
                                 {editingAdmin.image && (
                                     <div className="mb-2">
                                         <img src={`http://localhost:5000${editingAdmin.image}`} alt="Admin" width="100" />
                                     </div>
                                 )}
+                                <label>Update Image (optional if needed)</label>
                                 <input
                                     type="file"
                                     name="image"
                                     onChange={(e) => handleImageChange(e, setEditingAdmin)}
                                     className="form-control mb-2"
+                                    ref={editAdminImageRef}
                                 />
                             </div>
                             <div className="modal-footer">
