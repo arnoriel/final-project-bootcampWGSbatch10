@@ -52,7 +52,16 @@ const ManageAdmins = () => {
     };
 
     const handleImageChange = (e, setState) => {
-        setState(prevState => ({ ...prevState, image: e.target.files[0] }));
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setState(prevState => ({ ...prevState, image: file, imagePreview: reader.result })); // Set preview
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setState(prevState => ({ ...prevState, image: null, imagePreview: null }));
+        }
     };
 
     const addAdmin = async () => {
@@ -109,6 +118,7 @@ const ManageAdmins = () => {
             phone: admin.phone,
             division: admin.division,
             image: admin.images,
+            imagePreview: `http://localhost:5000${admin.images}`, // Set initial image preview
         });
         setShowUpdateModal(true);
         setCurrentModal('update');
@@ -208,6 +218,11 @@ const ManageAdmins = () => {
                                     className="form-control mb-2"
                                 />
                                 <label>Image</label>
+                                {newAdmin.imagePreview && (  // Tambahkan ini untuk preview image
+                                    <div className="mb-2">
+                                        <img src={newAdmin.imagePreview} alt="Preview" width="100" />
+                                    </div>
+                                )}
                                 <input
                                     type="file"
                                     name="image"
@@ -274,9 +289,9 @@ const ManageAdmins = () => {
                                     className="form-control mb-2"
                                 />
                                 <label>Profie Picture</label>
-                                {editingAdmin.image && (
+                                {editingAdmin.imagePreview && (
                                     <div className="mb-2">
-                                        <img src={`http://localhost:5000${editingAdmin.image}`} alt="Admin" width="100" />
+                                        <img src={editingAdmin.imagePreview} alt="Preview" width="100" />
                                     </div>
                                 )}
                                 <label>Update Image (optional if needed)</label>

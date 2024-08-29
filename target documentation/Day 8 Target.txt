@@ -1,0 +1,9 @@
+Day 8 Target:
+
+- Changing Sidebar Admin and Superadmin to be One by Together
+- Fixed bug Update Image
+- Showing Admin User details
+- Sidebar Active Function
+- Modal for Accepting discard changes
+- Fixed bug Update in Image Preview
+- Added Image Preview for new Admin User
