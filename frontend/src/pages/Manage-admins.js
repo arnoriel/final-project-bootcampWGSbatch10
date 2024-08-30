@@ -22,15 +22,16 @@ const ManageAdmins = () => {
         division: '',
         image: null,
     });
+    const [errors, setErrors] = useState({
+        email: '',
+        phone: ''
+    });
     const [showAddModal, setShowAddModal] = useState(false);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [showDiscardModal, setShowDiscardModal] = useState(false);
     const [currentModal, setCurrentModal] = useState('');
     const [selectedAdmin, setSelectedAdmin] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
-
-
-    // Use ref to access the file input element
     const newAdminImageRef = useRef(null);
     const editAdminImageRef = useRef(null);
 
@@ -41,7 +42,9 @@ const ManageAdmins = () => {
     const fetchAdmins = async () => {
         try {
             const response = await axios.get('http://localhost:5000/api/search', {
-                params: { query: searchQuery }
+                params: { 
+                    query: searchQuery, 
+                }
             });
             setAdmins(response.data);
         } catch (error) {
@@ -52,6 +55,22 @@ const ManageAdmins = () => {
     const handleInputChange = (e, setState) => {
         const { name, value } = e.target;
         setState(prevState => ({ ...prevState, [name]: value }));
+
+        if (name === 'email') {
+            if (!value.includes('@')) {
+                setErrors(prevErrors => ({ ...prevErrors, email: 'Email should be user@example.com' }));
+            } else {
+                setErrors(prevErrors => ({ ...prevErrors, email: '' }));
+            }
+        }
+
+        if (name === 'phone') {
+            if (!value.startsWith('0') && !value.startsWith('+62')) {
+                setErrors(prevErrors => ({ ...prevErrors, phone: 'Phone should be started with format 0 or +62' }));
+            } else {
+                setErrors(prevErrors => ({ ...prevErrors, phone: '' }));
+            }
+        }
     };
 
     const handleImageChange = (e, setState) => {
@@ -59,7 +78,7 @@ const ManageAdmins = () => {
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setState(prevState => ({ ...prevState, image: file, imagePreview: reader.result })); // Set preview
+                setState(prevState => ({ ...prevState, image: file, imagePreview: reader.result }));
             };
             reader.readAsDataURL(file);
         } else {
@@ -72,6 +91,8 @@ const ManageAdmins = () => {
     };
 
     const addAdmin = async () => {
+        if (errors.email || errors.phone) return;
+
         const formData = new FormData();
         formData.append('name', newAdmin.name);
         formData.append('email', newAdmin.email);
@@ -91,6 +112,8 @@ const ManageAdmins = () => {
     };
 
     const updateAdmin = async () => {
+        if (errors.email || errors.phone) return;
+
         const formData = new FormData();
         formData.append('name', editingAdmin.name);
         formData.append('email', editingAdmin.email);
@@ -125,7 +148,7 @@ const ManageAdmins = () => {
             phone: admin.phone,
             division: admin.division,
             image: admin.images,
-            imagePreview: `http://localhost:5000${admin.images}`, // Set initial image preview
+            imagePreview: `http://localhost:5000${admin.images}`,
         });
         setShowUpdateModal(true);
         setCurrentModal('update');
@@ -138,16 +161,12 @@ const ManageAdmins = () => {
 
     const resetNewAdminForm = () => {
         setNewAdmin({ name: '', email: '', phone: '', division: '', image: null });
-        if (newAdminImageRef.current) {
-            newAdminImageRef.current.value = null;
-        }
+        if (newAdminImageRef.current) newAdminImageRef.current.value = null;
     };
 
     const resetEditingAdminForm = () => {
         setEditingAdmin({ id: null, name: '', email: '', phone: '', division: '', image: null });
-        if (editAdminImageRef.current) {
-            editAdminImageRef.current.value = null;
-        }
+        if (editAdminImageRef.current) editAdminImageRef.current.value = null;
     };
 
     const handleCancel = (modalType) => {
@@ -204,23 +223,23 @@ const ManageAdmins = () => {
                                     onChange={(e) => handleInputChange(e, setNewAdmin)}
                                     className="form-control mb-2"
                                 />
-                                <label>Email</label>
+                                <label>Email  {errors.email && <span className="text-danger">{errors.email}</span>}</label>
                                 <input
                                     type="email"
                                     name="email"
                                     placeholder="Email"
                                     value={newAdmin.email}
                                     onChange={(e) => handleInputChange(e, setNewAdmin)}
-                                    className="form-control mb-2"
+                                    className={`form-control mb-2 ${errors.email ? 'is-invalid' : ''}`}
                                 />
-                                <label>Phone</label>
+                                <label>Phone  {errors.phone && <span className="text-danger">{errors.phone}</span>}</label>
                                 <input
                                     type="text"
                                     name="phone"
                                     placeholder="Phone"
                                     value={newAdmin.phone}
                                     onChange={(e) => handleInputChange(e, setNewAdmin)}
-                                    className="form-control mb-2"
+                                    className={`form-control mb-2 ${errors.phone ? 'is-invalid' : ''}`}
                                 />
                                 <label>Division</label>
                                 <input
@@ -241,17 +260,13 @@ const ManageAdmins = () => {
                                     type="file"
                                     name="image"
                                     onChange={(e) => handleImageChange(e, setNewAdmin)}
-                                    className="form-control mb-2"
+                                    className="form-control"
                                     ref={newAdminImageRef}
                                 />
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={() => handleCancel('add')}>
-                                    Cancel
-                                </button>
-                                <button type="button" className="btn btn-primary" onClick={addAdmin}>
-                                    Add Admin
-                                </button>
+                                <button type="button" className="btn btn-secondary" onClick={() => handleCancel('add')}>Cancel</button>
+                                <button type="button" className="btn btn-primary" onClick={addAdmin} disabled={errors.email || errors.phone}>Add Admin</button>
                             </div>
                         </div>
                     </div>
@@ -262,7 +277,7 @@ const ManageAdmins = () => {
                     <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                             <div className="modal-header">
-                                <h5 className="modal-title">Update Admin</h5>
+                                <h5 className="modal-title">Edit Admin</h5>
                                 <button type="button" className="btn-close" onClick={() => handleCancel('update')}></button>
                             </div>
                             <div className="modal-body">
@@ -275,23 +290,23 @@ const ManageAdmins = () => {
                                     onChange={(e) => handleInputChange(e, setEditingAdmin)}
                                     className="form-control mb-2"
                                 />
-                                <label>Email</label>
+                                <label>Email  {errors.email && <span className="text-danger">{errors.email}</span>}</label>
                                 <input
                                     type="email"
                                     name="email"
                                     placeholder="Email"
                                     value={editingAdmin.email}
                                     onChange={(e) => handleInputChange(e, setEditingAdmin)}
-                                    className="form-control mb-2"
+                                    className={`form-control mb-2 ${errors.email ? 'is-invalid' : ''}`}
                                 />
-                                <label>Phone</label>
+                                <label>Phone  {errors.phone && <span className="text-danger">{errors.phone}</span>}</label>
                                 <input
                                     type="text"
                                     name="phone"
                                     placeholder="Phone"
                                     value={editingAdmin.phone}
                                     onChange={(e) => handleInputChange(e, setEditingAdmin)}
-                                    className="form-control mb-2"
+                                    className={`form-control mb-2 ${errors.phone ? 'is-invalid' : ''}`}
                                 />
                                 <label>Division</label>
                                 <input
@@ -302,28 +317,44 @@ const ManageAdmins = () => {
                                     onChange={(e) => handleInputChange(e, setEditingAdmin)}
                                     className="form-control mb-2"
                                 />
-                                <label>Profie Picture</label>
+                                <label>Profile Picture</label>
                                 {editingAdmin.imagePreview && (
-                                    <div className="mb-2">
-                                        <img src={editingAdmin.imagePreview} alt="Preview" width="100" />
+                                    <div className="mt-2">
+                                        <img src={editingAdmin.imagePreview} alt="Preview" className="img-thumbnail" style={{ maxWidth: '200px' }} />
                                     </div>
                                 )}
-                                <label>Update Image (optional if needed)</label>
+                                <label>Change Profile Picture (Optional)</label>
                                 <input
                                     type="file"
                                     name="image"
                                     onChange={(e) => handleImageChange(e, setEditingAdmin)}
-                                    className="form-control mb-2"
+                                    className="form-control"
                                     ref={editAdminImageRef}
                                 />
+                                
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={() => handleCancel('update')}>
-                                    Cancel
-                                </button>
-                                <button type="button" className="btn btn-primary" onClick={updateAdmin}>
-                                    Update Admin
-                                </button>
+                                <button type="button" className="btn btn-secondary" onClick={() => handleCancel('update')}>Cancel</button>
+                                <button type="button" className="btn btn-primary" onClick={updateAdmin} disabled={errors.email || errors.phone}>Update Admin</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Modal Discard Changes */}
+                <div className={`modal fade ${showDiscardModal ? 'show d-block' : ''}`} tabIndex="-1" style={{ backgroundColor: showDiscardModal ? 'rgba(0,0,0,0.5)' : '' }}>
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Confirm Discard Changes</h5>
+                                <button type="button" className="btn-close" onClick={closeDiscardModal}></button>
+                            </div>
+                            <div className="modal-body">
+                                <p>Are you sure you want to discard the changes?</p>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={closeDiscardModal}>No</button>
+                                <button type="button" className="btn btn-primary" onClick={confirmDiscardChanges}>Yes</button>
                             </div>
                         </div>
                     </div>
@@ -359,29 +390,6 @@ const ManageAdmins = () => {
                     </div>
                 )}
 
-
-                {/* Modal Discard Changes Confirmation */}
-                <div className={`modal fade ${showDiscardModal ? 'show d-block' : ''}`} tabIndex="-1" style={{ backgroundColor: showDiscardModal ? 'rgba(0,0,0,0.5)' : '' }}>
-                    <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Discard Changes?</h5>
-                            </div>
-                            <div className="modal-body">
-                                <p>Are you sure you want to discard the changes?</p>
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={closeDiscardModal}>
-                                    No
-                                </button>
-                                <button type="button" className="btn btn-primary" onClick={confirmDiscardChanges}>
-                                    Yes, Discard Changes
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <ul className="list-group">
                     {admins.map((admin) => (
                         <li key={admin.id} className="list-group-item d-flex justify-content-between align-items-center">
@@ -410,7 +418,6 @@ const ManageAdmins = () => {
                         </li>
                     ))}
                 </ul>
-
             </div>
         </div>
     );

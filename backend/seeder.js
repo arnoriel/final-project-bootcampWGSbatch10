@@ -22,15 +22,15 @@ const users = [
         role: 'superadmin',
         images: path.join('uploads', 'superadmin.jpg')
     },
-    {
-        name: 'Admin User',
-        email: 'admin@example.com',
-        password: 'admin123',
-        phone: '081234567891',
-        division: 'HR',
-        role: 'admin',
-        images: path.join('uploads', 'admin.jpg')
-    },
+    // {
+    //     name: 'Admin User',
+    //     email: 'admin@example.com',
+    //     password: 'admin123',
+    //     phone: '081234567891',
+    //     division: 'HR',
+    //     role: 'admin',
+    //     images: path.join('uploads', 'admin.jpg')
+    // },
     {
         name: 'Employee User',
         email: 'employee@example.com',
