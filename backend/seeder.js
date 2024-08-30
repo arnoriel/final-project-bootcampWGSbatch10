@@ -20,7 +20,7 @@ const users = [
         phone: '081234567890',
         division: 'Management',
         role: 'superadmin',
-        images: path.join(__dirname, 'uploads', 'superadmin.jpg')
+        images: path.join('uploads', 'superadmin.jpg')
     },
     {
         name: 'Admin User',
@@ -29,7 +29,7 @@ const users = [
         phone: '081234567891',
         division: 'HR',
         role: 'admin',
-        images: path.join(__dirname, 'uploads', 'admin.jpg')
+        images: path.join('uploads', 'admin.jpg')
     },
     {
         name: 'Employee User',
@@ -38,7 +38,7 @@ const users = [
         phone: '081234567892',
         division: 'Sales',
         role: 'employee',
-        images: path.join(__dirname, 'uploads', 'employee.jpg')
+        images: path.join('uploads', 'employee.jpg')
     }
 ];
 

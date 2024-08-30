@@ -162,6 +162,27 @@ app.delete('/api/admins/:id', async (req, res) => {
     }
 });
 
+// Endpoint untuk search user
+app.get('/api/search', async (req, res) => {
+    const { query } = req.query;
+
+    try {
+        const searchQuery = `
+            SELECT * FROM users
+            WHERE role = 'admin'
+            AND (name ILIKE $1 OR email ILIKE $1 OR phone ILIKE $1 OR division ILIKE $1)
+            ORDER BY updated_at DESC
+        `;
+        const result = await pool.query(searchQuery, [`%${query}%`]);
+
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });

@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 const ManageAdmins = () => {
     const [admins, setAdmins] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [newAdmin, setNewAdmin] = useState({
         name: '',
         email: '',
@@ -35,11 +36,13 @@ const ManageAdmins = () => {
 
     useEffect(() => {
         fetchAdmins();
-    }, []);
+    }, [searchQuery]);
 
     const fetchAdmins = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/admins');
+            const response = await axios.get('http://localhost:5000/api/search', {
+                params: { query: searchQuery }
+            });
             setAdmins(response.data);
         } catch (error) {
             console.error(error);
@@ -62,6 +65,10 @@ const ManageAdmins = () => {
         } else {
             setState(prevState => ({ ...prevState, image: null, imagePreview: null }));
         }
+    };
+
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
     };
 
     const addAdmin = async () => {
@@ -171,6 +178,13 @@ const ManageAdmins = () => {
                 <button className="btn btn-primary mb-4" onClick={() => { setShowAddModal(true); setCurrentModal('add'); }}>
                     Add Admin
                 </button>
+                <input
+                    type="text"
+                    placeholder="Search by name, email, phone, or division"
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="form-control mb-4"
+                />
 
                 {/* Modal Add Admin */}
                 <div className={`modal fade ${showAddModal ? 'show d-block' : ''}`} tabIndex="-1" style={{ backgroundColor: showAddModal ? 'rgba(0,0,0,0.5)' : '' }}>
@@ -328,7 +342,7 @@ const ManageAdmins = () => {
                         >
                             <div className="modal-content">
                                 <div className="modal-header">
-                                    <h5 className="modal-title">Admin Details</h5>
+                                    <h5 className="modal-title">Admin Information</h5>
                                     <button type="button" className="btn-close" onClick={() => setShowDetailModal(false)}></button>
                                 </div>
                                 <div className="modal-body d-flex">
