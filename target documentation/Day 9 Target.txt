@@ -1,0 +1,4 @@
+Day 9 Target:
+
+- Added validation function when inputting new / update Admin
+- Added Search function
