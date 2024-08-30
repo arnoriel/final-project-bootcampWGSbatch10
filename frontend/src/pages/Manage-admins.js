@@ -227,7 +227,7 @@ const ManageAdmins = () => {
                                 <input
                                     type="email"
                                     name="email"
-                                    placeholder="Email"
+                                    placeholder="user@example.com"
                                     value={newAdmin.email}
                                     onChange={(e) => handleInputChange(e, setNewAdmin)}
                                     className={`form-control mb-2 ${errors.email ? 'is-invalid' : ''}`}
@@ -389,7 +389,7 @@ const ManageAdmins = () => {
                         </div>
                     </div>
                 )}
-
+                <h5>Admin Lists</h5>
                 <ul className="list-group">
                     {admins.map((admin) => (
                         <li key={admin.id} className="list-group-item d-flex justify-content-between align-items-center">
