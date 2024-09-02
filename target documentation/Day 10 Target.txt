@@ -3,3 +3,5 @@ Day 10 Target:
 - Added Pagination for Admins
 - Added Forgot Password feature
 - Added Active Login Session Protection
+- Added new Department column for users
+- Added new CRUD for employees
