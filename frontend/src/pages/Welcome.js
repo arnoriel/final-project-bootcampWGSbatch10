@@ -1,4 +1,3 @@
-// frontend/src/pages/Welcome.js
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Welcome.css';
@@ -6,11 +5,13 @@ import './Welcome.css';
 function Welcome() {
   return (
     <div className="welcome-container">
-      <h1>MyOffice</h1>
-      <p>Login Here to Start.</p>
-      <div className="welcome-buttons">
-        <Link to="/login" className="welcome-button">Login</Link>
-        {/* <Link to="/register" className="welcome-button">Register</Link> */}
+      <div className="welcome-overlay"></div>
+      <div className="welcome-content">
+        <h1>Welcome to MyOffice</h1>
+        <p>Your workspace, simplified.</p>
+        <div className="welcome-buttons">
+          <Link to="/login" className="welcome-button">Login</Link>
+        </div>
       </div>
     </div>
   );

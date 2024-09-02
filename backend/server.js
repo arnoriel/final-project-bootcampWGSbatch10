@@ -105,9 +105,19 @@ app.post('/api/login', async (req, res) => {
 });
 
 app.get('/api/admins', async (req, res) => {
+    const { page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
+
     try {
-        const admins = await pool.query("SELECT * FROM users WHERE role = 'admin' ORDER BY updated_at DESC");
-        res.status(200).json(admins.rows);
+        const totalAdmins = await pool.query("SELECT COUNT(*) FROM users WHERE role = 'admin'");
+        const admins = await pool.query(
+            "SELECT * FROM users WHERE role = 'admin' ORDER BY updated_at DESC LIMIT $1 OFFSET $2",
+            [limit, offset]
+        );
+        res.status(200).json({
+            total: totalAdmins.rows[0].count,
+            admins: admins.rows
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
@@ -181,7 +191,6 @@ app.get('/api/search', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
-
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

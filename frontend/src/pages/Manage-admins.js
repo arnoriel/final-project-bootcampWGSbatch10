@@ -3,6 +3,7 @@ import axios from 'axios';
 import Sidebar from './layouts/Sidebar';
 import './layouts/MainContent.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Pagination from 'react-bootstrap/Pagination';
 
 const ManageAdmins = () => {
     const [admins, setAdmins] = useState([]);
@@ -34,23 +35,44 @@ const ManageAdmins = () => {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const newAdminImageRef = useRef(null);
     const editAdminImageRef = useRef(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const rowsPerPageOptions = [6, 11, 25, 50, 100];
+    const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageOptions[0]);
 
     useEffect(() => {
         fetchAdmins();
-    }, [searchQuery]);
+    }, [searchQuery, currentPage, rowsPerPage]);
 
     const fetchAdmins = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/search', {
-                params: { 
-                    query: searchQuery, 
-                }
-            });
-            setAdmins(response.data);
+            let response;
+
+            if (searchQuery) {
+                response = await axios.get('http://localhost:5000/api/search', {
+                    params: {
+                        query: searchQuery
+                    }
+                });
+                setAdmins(response.data || []); // Tambahkan fallback [] jika data kosong
+            } else {
+                response = await axios.get('http://localhost:5000/api/admins', {
+                    params: {
+                        page: currentPage,
+                        limit: rowsPerPage
+                    }
+                });
+
+                setAdmins(response.data.admins || []); // Tambahkan fallback [] jika data kosong
+                setTotalPages(Math.ceil(response.data.total / rowsPerPage));
+            }
+
         } catch (error) {
-            console.error(error);
+            console.error('Error fetching admin data:', error);
+            setAdmins([]); // Set data kosong jika terjadi error
         }
     };
+
 
     const handleInputChange = (e, setState) => {
         const { name, value } = e.target;
@@ -88,6 +110,16 @@ const ManageAdmins = () => {
 
     const handleSearchChange = (e) => {
         setSearchQuery(e.target.value);
+        setCurrentPage(1); // Reset to first page on new search
+    };
+
+    const handleRowsPerPageChange = (e) => {
+        setRowsPerPage(Number(e.target.value));
+        setCurrentPage(1); // Reset to first page when rows per page changes
+    };
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
     };
 
     const addAdmin = async () => {
@@ -331,7 +363,7 @@ const ManageAdmins = () => {
                                     className="form-control"
                                     ref={editAdminImageRef}
                                 />
-                                
+
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => handleCancel('update')}>Cancel</button>
@@ -390,34 +422,67 @@ const ManageAdmins = () => {
                     </div>
                 )}
                 <h5>Admin Lists</h5>
-                <ul className="list-group">
-                    {admins.map((admin) => (
-                        <li key={admin.id} className="list-group-item d-flex justify-content-between align-items-center">
-                            <div className="d-flex align-items-center">
-                                <img
-                                    src={`http://localhost:5000${admin.images}`}
-                                    alt={admin.name}
-                                    width="50"
-                                    className="me-3"
-                                    onClick={() => handleShowDetails(admin)}
-                                    style={{ cursor: 'pointer' }}
-                                />
-                                <div onClick={() => handleShowDetails(admin)} style={{ cursor: 'pointer' }}>
-                                    <p className="mb-1 fw-bold">{admin.name} | {admin.division}</p>
-                                    <p className="mb-0">{admin.email}</p>
-                                </div>
-                            </div>
-                            <div>
-                                <button className="btn btn-sm btn-primary me-2" onClick={() => handleEditClick(admin)}>
-                                    Edit
-                                </button>
-                                <button className="btn btn-sm btn-danger" onClick={() => deleteAdmin(admin.id)}>
-                                    Delete
-                                </button>
-                            </div>
-                        </li>
+
+                <div className="mb-4">
+                    <label>Rows per page: </label>
+                    <select value={rowsPerPage} onChange={handleRowsPerPageChange} className="form-select d-inline w-auto">
+                        {rowsPerPageOptions.map(option => (
+                            <option key={option} value={option}>{option}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <table className="table">
+                    <tbody>
+                        {admins.length > 0 ? admins.map((admin, index) => (
+                            <tr key={admin.id} className="align-middle">
+                                <td style={{ width: '100px' }}>
+                                    <img
+                                        src={`http://localhost:5000${admin.images}`}
+                                        alt={admin.name}
+                                        width="70"
+                                        className="me-3"
+                                        onClick={() => handleShowDetails(admin)}
+                                    />
+                                </td>
+                                <td>
+                                    <span onClick={() => handleShowDetails(admin)} style={{ cursor: 'pointer', color: 'black' }}>
+                                        <strong>{admin.name}</strong> | {admin.division}
+                                        <p>{admin.email}</p>
+                                    </span>
+                                </td>
+                                <td className="text-end" style={{ whiteSpace: 'nowrap' }}>
+                                    <button
+                                        className="btn btn-primary me-2"
+                                        onClick={() => handleEditClick(admin)}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className="btn btn-danger"
+                                        onClick={() => deleteAdmin(admin.id)}
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        )) : (
+                            <tr>
+                                <td colSpan="6" className="text-center">No data available</td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+
+                <Pagination className="justify-content-center">
+                    <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
+                    {[...Array(totalPages)].map((_, index) => (
+                        <Pagination.Item key={index + 1} active={index + 1 === currentPage} onClick={() => handlePageChange(index + 1)}>
+                            {index + 1}
+                        </Pagination.Item>
                     ))}
-                </ul>
+                    <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
+                </Pagination>
             </div>
         </div>
     );

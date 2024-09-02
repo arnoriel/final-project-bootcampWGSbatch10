@@ -1,42 +1,69 @@
-/* frontend/src/pages/Welcome.css */
-
 .welcome-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    text-align: center;
-    background-color: #1e3a8a; /* Warna biru navy */
-    color: #ffffff;
-  }
-  
-  .welcome-container h1 {
-    font-size: 3rem;
-    margin-bottom: 20px;
-  }
-  
-  .welcome-container p {
-    font-size: 1.5rem;
-    margin-bottom: 40px;
-  }
-  
-  .welcome-buttons {
-    display: flex;
-    gap: 20px;
-  }
-  
-  .welcome-button {
-    padding: 10px 20px;
-    background-color: #3b82f6; /* Warna biru terang */
-    color: #ffffff;
-    text-decoration: none;
-    font-size: 1.2rem;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-  }
-  
-  .welcome-button:hover {
-    background-color: #2563eb; /* Warna biru yang lebih gelap saat hover */
-  }
-  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  position: relative;
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6); /* Gradien Warna */
+  overflow: hidden;
+}
+
+.welcome-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/public/assets/bg.jpg'); /* Ganti dengan path gambar latar belakang */
+  background-size: cover;
+  background-position: center;
+  opacity: 0.3; /* Atur transparansi */
+}
+
+.welcome-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  color: #ffffff;
+  animation: fadeIn 1.5s ease-in-out; /* Animasi Fade In */
+}
+
+.welcome-container h1 {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  font-family: 'Poppins', sans-serif; /* Gunakan font yang lebih stylish */
+}
+
+.welcome-container p {
+  font-size: 1.5rem;
+  margin-bottom: 40px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.welcome-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.welcome-button {
+  padding: 10px 30px;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #1e3a8a;
+  text-decoration: none;
+  font-size: 1.2rem;
+  border-radius: 30px;
+  transition: background-color 0.3s, transform 0.3s;
+  font-weight: bold;
+}
+
+.welcome-button:hover {
+  background-color: rgba(255, 255, 255, 1);
+  transform: scale(1.05);
+}
+
+/* Animasi */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
