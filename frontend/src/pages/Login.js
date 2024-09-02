@@ -10,7 +10,7 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
+  
     try {
       const response = await fetch('http://localhost:5000/api/login', {
         method: 'POST',
@@ -20,11 +20,11 @@ function Login() {
         body: JSON.stringify({ email, password }),
       });
       const data = await response.json();
-
+  
       if (response.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('role', data.role);
-
+  
         if (data.role === 'superadmin') {
           navigate('/superadmin');
         } else if (data.role === 'admin') {
@@ -34,6 +34,31 @@ function Login() {
         }
       } else {
         setError(data.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setError('Something went wrong. Please try again.');
+    }
+  };
+  
+  const handleLogout = async () => {
+    const token = localStorage.getItem('token');
+  
+    try {
+      const response = await fetch('http://localhost:5000/api/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (response.ok) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        navigate('/login');
+      } else {
+        setError('Failed to logout. Please try again.');
       }
     } catch (error) {
       console.error('Error:', error);
