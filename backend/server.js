@@ -217,18 +217,97 @@ app.delete('/api/admins/:id', async (req, res) => {
     }
 });
 
+// CRUD untuk Employee
+
+// GET Employees
+app.get('/api/employees', async (req, res) => {
+    const { page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
+
+    try {
+        const totalEmployees = await pool.query("SELECT COUNT(*) FROM users WHERE role = 'employee'");
+        const employees = await pool.query(
+            "SELECT * FROM users WHERE role = 'employee' ORDER BY updated_at DESC LIMIT $1 OFFSET $2",
+            [limit, offset]
+        );
+        res.status(200).json({
+            total: totalEmployees.rows[0].count,
+            employees: employees.rows.map(employee => ({
+                ...employee,
+                department: employee.department  // Tambahkan department ke response
+            }))
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// PUT Employee
+app.put('/api/employees/:id', upload.single('image'), async (req, res) => {
+    const { id } = req.params;
+    const { name, email, phone, division, department } = req.body;  // Tambahkan department di sini
+    let imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+    try {
+        const employee = await pool.query('SELECT * FROM users WHERE id = $1 AND role = $2', [id, 'employee']);
+        if (employee.rows.length === 0) {
+            return res.status(404).json({ message: 'Employee not found' });
+        }
+
+        // Use existing image if no new file is uploaded
+        if (!imagePath) {
+            imagePath = employee.rows[0].images;
+        }
+
+        await pool.query(
+            `UPDATE users SET name = $1, email = $2, phone = $3, division = $4, department = $5, images = $6, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = $7`,
+            [name, email, phone, division, department, imagePath, id]  // Tambahkan department ke query
+        );
+
+        res.status(200).json({ message: 'Employee updated successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// DELETE Employee
+app.delete('/api/employees/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const employee = await pool.query('SELECT * FROM users WHERE id = $1 AND role = $2', [id, 'employee']);
+        if (employee.rows.length === 0) {
+            return res.status(404).json({ message: 'Employee not found' });
+        }
+
+        await pool.query('DELETE FROM users WHERE id = $1', [id]);
+
+        res.status(200).json({ message: 'Employee deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 // Search Endpoint
 app.get('/api/search', async (req, res) => {
-    const { query } = req.query;
+    const { query, role } = req.query;
+
+    if (!query || !role) {
+        return res.status(400).json({ message: 'Query and role parameters are required' });
+    }
 
     try {
         const searchQuery = `
             SELECT * FROM users
-            WHERE role = 'admin'
-            AND (name ILIKE $1 OR email ILIKE $1 OR phone ILIKE $1 OR division ILIKE $1 OR department ILIKE $1)
+            WHERE role = $1
+            AND (name ILIKE $2 OR email ILIKE $2 OR phone ILIKE $2 OR division ILIKE $2 OR department ILIKE $2)
             ORDER BY updated_at DESC
         `;
-        const result = await pool.query(searchQuery, [`%${query}%`]);
+        const result = await pool.query(searchQuery, [role, `%${query}%`]);
 
         res.status(200).json(result.rows);
     } catch (error) {

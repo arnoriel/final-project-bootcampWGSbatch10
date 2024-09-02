@@ -55,7 +55,8 @@ const ManageAdmins = () => {
             if (searchQuery) {
                 response = await axios.get('http://localhost:5000/api/search', {
                     params: {
-                        query: searchQuery
+                        query: searchQuery,
+                        role: 'admin' // Menambahkan role admin
                     }
                 });
                 setAdmins(response.data || []);
@@ -484,6 +485,7 @@ const ManageAdmins = () => {
                         </div>
                     </div>
                 )}
+
                 <h5>Admin Lists</h5>
 
                 <div className="mb-4">
