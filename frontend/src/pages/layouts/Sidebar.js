@@ -7,11 +7,27 @@ function Sidebar() {
   const location = useLocation(); // Menyediakan informasi tentang lokasi saat ini
   const role = localStorage.getItem('role'); 
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    navigate('/login', { replace: true });
-  };
+  const handleLogout = async () => {
+    const token = localStorage.getItem('token');
+
+    try {
+        const response = await fetch('http://localhost:5000/api/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ token }),
+        });
+
+        if (response.ok) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            navigate('/login');
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
+};
 
   // Menentukan apakah path saat ini sama dengan path yang diinginkan
   const isActive = (path) => location.pathname === path;

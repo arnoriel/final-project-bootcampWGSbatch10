@@ -91,21 +91,23 @@ app.post('/api/login', async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // Cek apakah sudah ada sesi aktif untuk Superadmin atau pengguna lain
-        const activeSession = await pool.query('SELECT * FROM active_sessions WHERE user_id = $1 AND is_active = true', [user.rows[0].id]);
-
+        // Check if user is already active in another session
+        const activeSession = await pool.query('SELECT * FROM active_sessions WHERE user_id = $1', [user.rows[0].id]);
         if (activeSession.rows.length > 0) {
-            return res.status(403).json({ message: 'You have no Permission' });
+            return res.status(403).json({ message: 'You are not Allowed' });
         }
 
-        // Buat token baru dan simpan dalam sesi aktif
+        // Generate token and set active session
         const token = jwt.sign(
             { id: user.rows[0].id, email: user.rows[0].email, role: user.rows[0].role },
             'your_jwt_secret',
             { expiresIn: '1h' }
         );
 
-        await pool.query('INSERT INTO active_sessions (user_id, token) VALUES ($1, $2)', [user.rows[0].id, token]);
+        await pool.query(
+            'INSERT INTO active_sessions (user_id, session_token) VALUES ($1, $2)',
+            [user.rows[0].id, token]
+        );
 
         res.json({ message: 'Login successful', token, role: user.rows[0].role });
     } catch (error) {
@@ -114,37 +116,29 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Middleware to verify active session
-const verifyActiveSession = async (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    
-    if (!token) {
-        return res.status(403).json({ message: 'You have no Permission' });
-    }
+// Logout user
+app.post('/api/logout', async (req, res) => {
+    const token = req.body.token;
 
     try {
-        const decoded = jwt.verify(token, 'your_jwt_secret');
-        const session = await pool.query('SELECT * FROM active_sessions WHERE user_id = $1 AND token = $2 AND is_active = true', [decoded.id, token]);
-
-        if (session.rows.length === 0) {
-            return res.status(403).json({ message: 'You have no Permission' });
-        }
-
-        req.user = decoded;
-        next();
+        await pool.query('DELETE FROM active_sessions WHERE session_token = $1', [token]);
+        res.json({ message: 'Logout successful' });
     } catch (error) {
         console.error(error);
-        res.status(401).json({ message: 'Invalid token' });
+        res.status(500).json({ message: 'Internal server error' });
     }
-};
+});
 
-// Logout user
-app.post('/api/logout', verifyActiveSession, async (req, res) => {
+// Middleware to check if session is still active
+app.use('/api/protected-route', async (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
-    
+
     try {
-        await pool.query('UPDATE active_sessions SET is_active = false WHERE token = $1', [token]);
-        res.status(200).json({ message: 'Logout successful' });
+        const session = await pool.query('SELECT * FROM active_sessions WHERE session_token = $1', [token]);
+        if (session.rows.length === 0) {
+            return res.status(403).json({ message: 'Session expired or not active' });
+        }
+        next();
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
