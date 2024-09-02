@@ -192,6 +192,35 @@ app.get('/api/search', async (req, res) => {
     }
 });
 
+app.post('/api/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        // Cek apakah email terdaftar
+        const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (user.rows.length === 0) {
+            return res.status(404).json({ message: 'Email not found' });
+        }
+
+        // Generate password baru
+        const newPassword = generateRandomPassword();
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update password di database
+        await pool.query(
+            'UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE email = $2',
+            [hashedPassword, email]
+        );
+
+        console.log(`Password reset for ${email}: ${newPassword}`);
+        
+        res.status(200).json({ message: 'Your password has reset, ask Admin/Operator for the Password' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });

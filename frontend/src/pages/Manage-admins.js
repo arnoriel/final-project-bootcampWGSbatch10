@@ -39,6 +39,8 @@ const ManageAdmins = () => {
     const [totalPages, setTotalPages] = useState(1);
     const rowsPerPageOptions = [6, 11, 25, 50, 100];
     const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageOptions[0]);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [adminToDelete, setAdminToDelete] = useState(null);
 
     useEffect(() => {
         fetchAdmins();
@@ -169,6 +171,23 @@ const ManageAdmins = () => {
             fetchAdmins();
         } catch (error) {
             console.error(error);
+        }
+    };
+
+    const handleDeleteClick = (admin) => {
+        setAdminToDelete(admin);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDeleteAdmin = async () => {
+        if (adminToDelete) {
+            try {
+                await axios.delete(`http://localhost:5000/api/admins/${adminToDelete.id}`);
+                fetchAdmins();  // Refresh daftar admin
+                setShowDeleteModal(false);  // Tutup modal setelah delete
+            } catch (error) {
+                console.error('Error deleting admin:', error);
+            }
         }
     };
 
@@ -392,6 +411,27 @@ const ManageAdmins = () => {
                     </div>
                 </div>
 
+                {/* Modal Delete Confirmation */}
+                <div className={`modal fade ${showDeleteModal ? 'show d-block' : ''}`} tabIndex="-1" style={{ backgroundColor: showDeleteModal ? 'rgba(0,0,0,0.5)' : '' }}>
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Confirm Delete</h5>
+                                <button type="button" className="btn-close" onClick={() => setShowDeleteModal(false)}></button>
+                            </div>
+                            <div className="modal-body">
+                                <p>Are you sure you want to delete this admin?</p>
+                                <p><strong>{adminToDelete?.name}</strong></p>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Cancel</button>
+                                <button type="button" className="btn btn-danger" onClick={confirmDeleteAdmin}>Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
                 {selectedAdmin && (
                     <div
                         className={`modal fade ${showDetailModal ? 'show d-block' : ''}`}
@@ -458,12 +498,7 @@ const ManageAdmins = () => {
                                     >
                                         Edit
                                     </button>
-                                    <button
-                                        className="btn btn-danger"
-                                        onClick={() => deleteAdmin(admin.id)}
-                                    >
-                                        Delete
-                                    </button>
+                                    <button className="btn btn-danger" onClick={() => handleDeleteClick(admin)}>Delete</button>
                                 </td>
                             </tr>
                         )) : (

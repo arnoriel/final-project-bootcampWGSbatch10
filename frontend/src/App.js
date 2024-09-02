@@ -5,6 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 // import Register from './pages/Register';
 import Login from './pages/Login';
+import Forgot from './pages/Forgot';
 import Superadmin from './pages/Superadmin';
 import Admin from './pages/Admin';
 import Employee from './pages/Employee';
@@ -20,6 +21,7 @@ function App() {
         <Route path="/" element={<Welcome />} />
         {/* <Route path="/register" element={<Register />} /> */}
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot" element={<Forgot />} />
         <Route path="/superadmin" element={<Superadmin />} />
         <Route path="/admin" element={<Admin />} />
        
