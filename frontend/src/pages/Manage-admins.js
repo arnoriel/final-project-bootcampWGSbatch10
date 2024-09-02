@@ -13,6 +13,7 @@ const ManageAdmins = () => {
         email: '',
         phone: '',
         division: '',
+        department: '',  // Tambahkan department di sini
         image: null,
     });
     const [editingAdmin, setEditingAdmin] = useState({
@@ -21,6 +22,7 @@ const ManageAdmins = () => {
         email: '',
         phone: '',
         division: '',
+        department: '',  // Tambahkan department di sini
         image: null,
     });
     const [errors, setErrors] = useState({
@@ -56,7 +58,7 @@ const ManageAdmins = () => {
                         query: searchQuery
                     }
                 });
-                setAdmins(response.data || []); // Tambahkan fallback [] jika data kosong
+                setAdmins(response.data || []);
             } else {
                 response = await axios.get('http://localhost:5000/api/admins', {
                     params: {
@@ -65,16 +67,15 @@ const ManageAdmins = () => {
                     }
                 });
 
-                setAdmins(response.data.admins || []); // Tambahkan fallback [] jika data kosong
+                setAdmins(response.data.admins || []);
                 setTotalPages(Math.ceil(response.data.total / rowsPerPage));
             }
 
         } catch (error) {
             console.error('Error fetching admin data:', error);
-            setAdmins([]); // Set data kosong jika terjadi error
+            setAdmins([]);
         }
     };
-
 
     const handleInputChange = (e, setState) => {
         const { name, value } = e.target;
@@ -112,12 +113,12 @@ const ManageAdmins = () => {
 
     const handleSearchChange = (e) => {
         setSearchQuery(e.target.value);
-        setCurrentPage(1); // Reset to first page on new search
+        setCurrentPage(1);
     };
 
     const handleRowsPerPageChange = (e) => {
         setRowsPerPage(Number(e.target.value));
-        setCurrentPage(1); // Reset to first page when rows per page changes
+        setCurrentPage(1);
     };
 
     const handlePageChange = (newPage) => {
@@ -132,6 +133,7 @@ const ManageAdmins = () => {
         formData.append('email', newAdmin.email);
         formData.append('phone', newAdmin.phone);
         formData.append('division', newAdmin.division);
+        formData.append('department', newAdmin.department);  // Tambahkan department di sini
         formData.append('role', 'admin');
         formData.append('image', newAdmin.image);
 
@@ -153,6 +155,7 @@ const ManageAdmins = () => {
         formData.append('email', editingAdmin.email);
         formData.append('phone', editingAdmin.phone);
         formData.append('division', editingAdmin.division);
+        formData.append('department', editingAdmin.department);  // Tambahkan department di sini
         formData.append('image', editingAdmin.image);
 
         try {
@@ -183,8 +186,8 @@ const ManageAdmins = () => {
         if (adminToDelete) {
             try {
                 await axios.delete(`http://localhost:5000/api/admins/${adminToDelete.id}`);
-                fetchAdmins();  // Refresh daftar admin
-                setShowDeleteModal(false);  // Tutup modal setelah delete
+                fetchAdmins();
+                setShowDeleteModal(false);
             } catch (error) {
                 console.error('Error deleting admin:', error);
             }
@@ -198,6 +201,7 @@ const ManageAdmins = () => {
             email: admin.email,
             phone: admin.phone,
             division: admin.division,
+            department: admin.department,  // Tambahkan department di sini
             image: admin.images,
             imagePreview: `http://localhost:5000${admin.images}`,
         });
@@ -211,12 +215,12 @@ const ManageAdmins = () => {
     };
 
     const resetNewAdminForm = () => {
-        setNewAdmin({ name: '', email: '', phone: '', division: '', image: null });
+        setNewAdmin({ name: '', email: '', phone: '', division: '', department: '', image: null });
         if (newAdminImageRef.current) newAdminImageRef.current.value = null;
     };
 
     const resetEditingAdminForm = () => {
-        setEditingAdmin({ id: null, name: '', email: '', phone: '', division: '', image: null });
+        setEditingAdmin({ id: null, name: '', email: '', phone: '', division: '', department: '', image: null });
         if (editAdminImageRef.current) editAdminImageRef.current.value = null;
     };
 
@@ -292,6 +296,15 @@ const ManageAdmins = () => {
                                     onChange={(e) => handleInputChange(e, setNewAdmin)}
                                     className={`form-control mb-2 ${errors.phone ? 'is-invalid' : ''}`}
                                 />
+                                <label>Department</label>
+                                <input
+                                    type="text"
+                                    name="department"
+                                    placeholder="Department"
+                                    value={newAdmin.department}
+                                    onChange={(e) => handleInputChange(e, setNewAdmin)}
+                                    className="form-control mb-2"
+                                />
                                 <label>Division</label>
                                 <input
                                     type="text"
@@ -358,6 +371,15 @@ const ManageAdmins = () => {
                                     value={editingAdmin.phone}
                                     onChange={(e) => handleInputChange(e, setEditingAdmin)}
                                     className={`form-control mb-2 ${errors.phone ? 'is-invalid' : ''}`}
+                                />
+                                <label>Department</label>
+                                <input
+                                    type="text"
+                                    name="department"
+                                    placeholder="Department"
+                                    value={editingAdmin.department}
+                                    onChange={(e) => handleInputChange(e, setEditingAdmin)}
+                                    className="form-control mb-2"
                                 />
                                 <label>Division</label>
                                 <input
@@ -454,6 +476,7 @@ const ManageAdmins = () => {
                                         <p><strong>Name:</strong> {selectedAdmin.name}</p>
                                         <p><strong>Email:</strong> {selectedAdmin.email}</p>
                                         <p><strong>Phone:</strong> {selectedAdmin.phone}</p>
+                                        <p><strong>Deparment:</strong> {selectedAdmin.department}</p>
                                         <p><strong>Division:</strong> {selectedAdmin.division}</p>
                                     </div>
                                 </div>
@@ -487,7 +510,7 @@ const ManageAdmins = () => {
                                 </td>
                                 <td>
                                     <span onClick={() => handleShowDetails(admin)} style={{ cursor: 'pointer', color: 'black' }}>
-                                        <strong>{admin.name}</strong> | {admin.division}
+                                        <strong>{admin.name}</strong> | {admin.department}
                                         <p>{admin.email}</p>
                                     </span>
                                 </td>

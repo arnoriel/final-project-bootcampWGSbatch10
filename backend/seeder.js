@@ -20,6 +20,7 @@ const users = [
         phone: '081234567890',
         division: 'Management',
         role: 'superadmin',
+        department: 'Administrator',
         images: path.join('uploads', 'superadmin.jpg')
     },
     // {
@@ -31,15 +32,15 @@ const users = [
     //     role: 'admin',
     //     images: path.join('uploads', 'admin.jpg')
     // },
-    {
-        name: 'Employee User',
-        email: 'employee@example.com',
-        password: 'employee123',
-        phone: '081234567892',
-        division: 'Sales',
-        role: 'employee',
-        images: path.join('uploads', 'employee.jpg')
-    }
+    // {
+    //     name: 'Employee User',
+    //     email: 'employee@example.com',
+    //     password: 'employee123',
+    //     phone: '081234567892',
+    //     division: 'Sales',
+    //     role: 'employee',
+    //     images: path.join('uploads', 'employee.jpg')
+    // }
 ];
 
 // Function to seed users
@@ -58,9 +59,9 @@ const seedUsers = async () => {
 
             // Insert the new user with current timestamp for updated_at
             await pool.query(
-                `INSERT INTO users (name, email, password, phone, division, role, images, updated_at) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
-                [user.name, user.email, hashedPassword, user.phone, user.division, user.role, user.images]
+                `INSERT INTO users (name, email, password, phone, division, role, images, department, updated_at) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
+                [user.name, user.email, hashedPassword, user.phone, user.division, user.role, user.images, user.department]
             );
 
             console.log(`User ${user.email} seeded successfully!`);

@@ -47,7 +47,7 @@ const generateRandomPassword = () => {
 
 // Register user with image upload
 app.post('/api/register', upload.single('image'), async (req, res) => {
-    const { name, email, phone, division, role } = req.body;
+    const { name, email, phone, division, department, role } = req.body;  // Tambahkan department di sini
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
     
     const userRole = role || 'employee';
@@ -62,14 +62,14 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         await pool.query(
-            `INSERT INTO users (name, email, password, phone, division, images, role, updated_at) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)`,
-            [name, email, hashedPassword, phone, division, imagePath, userRole]
+            `INSERT INTO users (name, email, password, phone, division, department, images, role, updated_at) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP)`,
+            [name, email, hashedPassword, phone, division, department, imagePath, userRole]  // Tambahkan department ke query
         );
 
-        console.log(`Admin created with email: ${email}, password: ${password}`);
+        console.log(`User created with email: ${email}, password: ${password}`);
 
-        res.status(201).json({ message: 'Admin registered successfully' });
+        res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
@@ -145,6 +145,7 @@ app.use('/api/protected-route', async (req, res, next) => {
     }
 });
 
+// GET Admins
 app.get('/api/admins', async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
@@ -157,7 +158,10 @@ app.get('/api/admins', async (req, res) => {
         );
         res.status(200).json({
             total: totalAdmins.rows[0].count,
-            admins: admins.rows
+            admins: admins.rows.map(admin => ({
+                ...admin,
+                department: admin.department  // Tambahkan department ke response
+            }))
         });
     } catch (error) {
         console.error(error);
@@ -165,9 +169,10 @@ app.get('/api/admins', async (req, res) => {
     }
 });
 
+// PUT Admin
 app.put('/api/admins/:id', upload.single('image'), async (req, res) => {
     const { id } = req.params;
-    const { name, email, phone, division } = req.body;
+    const { name, email, phone, division, department } = req.body;  // Tambahkan department di sini
     let imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
     try {
@@ -182,9 +187,9 @@ app.put('/api/admins/:id', upload.single('image'), async (req, res) => {
         }
 
         await pool.query(
-            `UPDATE users SET name = $1, email = $2, phone = $3, division = $4, images = $5, updated_at = CURRENT_TIMESTAMP 
-            WHERE id = $6`,
-            [name, email, phone, division, imagePath, id]
+            `UPDATE users SET name = $1, email = $2, phone = $3, division = $4, department = $5, images = $6, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = $7`,
+            [name, email, phone, division, department, imagePath, id]  // Tambahkan department ke query
         );
 
         res.status(200).json({ message: 'Admin updated successfully' });
@@ -193,7 +198,6 @@ app.put('/api/admins/:id', upload.single('image'), async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
-
 
 app.delete('/api/admins/:id', async (req, res) => {
     const { id } = req.params;
@@ -213,7 +217,7 @@ app.delete('/api/admins/:id', async (req, res) => {
     }
 });
 
-// Endpoint untuk search user
+// Search Endpoint
 app.get('/api/search', async (req, res) => {
     const { query } = req.query;
 
@@ -221,7 +225,7 @@ app.get('/api/search', async (req, res) => {
         const searchQuery = `
             SELECT * FROM users
             WHERE role = 'admin'
-            AND (name ILIKE $1 OR email ILIKE $1 OR phone ILIKE $1 OR division ILIKE $1)
+            AND (name ILIKE $1 OR email ILIKE $1 OR phone ILIKE $1 OR division ILIKE $1 OR department ILIKE $1)
             ORDER BY updated_at DESC
         `;
         const result = await pool.query(searchQuery, [`%${query}%`]);
