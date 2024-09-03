@@ -1,4 +1,3 @@
-// frontend/src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -12,19 +11,18 @@ import Employee from './pages/Employee';
 import Welcome from './pages/Welcome';
 import ManageAdmins from './pages/Manage-admins';
 import ManageEmployees from './pages/Manage-employees';
-import ProtectedRoute from './ProtectedRoute'; // Import the ProtectedRoute component
+import UserList from './pages/User-list';
+import ProtectedRoute from './ProtectedRoute';
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Welcome />} />
-        {/* <Route path="/register" element={<Register />} /> */}
         <Route path="/login" element={<Login />} />
         <Route path="/forgot" element={<Forgot />} />
         <Route path="/superadmin" element={<Superadmin />} />
         <Route path="/admin" element={<Admin />} />
-       
         <Route path="/employee" element={<Employee />} />
         <Route 
           path="/manageadmins" 
@@ -34,7 +32,22 @@ function App() {
             </ProtectedRoute>
           } 
         />
-        <Route path="/manageemployees" element={<ManageEmployees />} />
+        <Route 
+          path="/manageemployees" 
+          element={
+            <ProtectedRoute role={["superadmin", "admin"]}>
+              <ManageEmployees />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/employee-list" 
+          element={
+            <ProtectedRoute role={["superadmin", "admin", "employee"]}>
+              <UserList />
+            </ProtectedRoute>
+          } 
+        />
       </Routes>
     </Router>
   );

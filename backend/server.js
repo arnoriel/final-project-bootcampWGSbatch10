@@ -45,6 +45,39 @@ const generateRandomPassword = () => {
     return password;
 };
 
+// Middleware untuk autentikasi
+const authenticate = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).json({ message: 'Authorization header missing' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({ message: 'Token missing' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, 'your_jwt_secret');
+        const userId = decoded.id;
+
+        // Cek apakah token masih aktif di active_sessions
+        const session = await pool.query(
+            'SELECT * FROM active_sessions WHERE user_id = $1 AND session_token = $2',
+            [userId, token]
+        );
+        if (session.rows.length === 0) {
+            return res.status(403).json({ message: 'Session expired or not active' });
+        }
+
+        req.user = decoded; // Simpan data user ke request
+        next();
+    } catch (error) {
+        console.error(error);
+        res.status(403).json({ message: 'Invalid token' });
+    }
+};
+
 // Register user with image upload
 app.post('/api/register', upload.single('image'), async (req, res) => {
     const { name, email, phone, division, department, role } = req.body;  // Tambahkan department di sini
@@ -139,6 +172,33 @@ app.use('/api/protected-route', async (req, res, next) => {
             return res.status(403).json({ message: 'Session expired or not active' });
         }
         next();
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Endpoint untuk mendapatkan data pengguna saat ini
+app.get('/api/user', authenticate, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await pool.query('SELECT name FROM users WHERE id = $1', [userId]);
+
+        if (user.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json({ name: user.rows[0].name });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+app.get('/api/users', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM users ORDER BY updated_at DESC');
+        res.status(200).json(result.rows);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });

@@ -4,32 +4,31 @@ import './Sidebar.css';
 
 function Sidebar() {
   const navigate = useNavigate();
-  const location = useLocation(); // Menyediakan informasi tentang lokasi saat ini
-  const role = localStorage.getItem('role'); 
+  const location = useLocation();
+  const role = localStorage.getItem('role');
 
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
 
     try {
-        const response = await fetch('http://localhost:5000/api/logout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ token }),
-        });
+      const response = await fetch('http://localhost:5000/api/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token }),
+      });
 
-        if (response.ok) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('role');
-            navigate('/login');
-        }
+      if (response.ok) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        navigate('/login');
+      }
     } catch (error) {
-        console.error('Logout error:', error);
+      console.error('Logout error:', error);
     }
-};
+  };
 
-  // Menentukan apakah path saat ini sama dengan path yang diinginkan
   const isActive = (path) => location.pathname === path;
 
   return (
@@ -53,6 +52,13 @@ function Sidebar() {
             Manage Employees
           </Link>
         </li>
+        {(role === 'superadmin' || role === 'admin' || role === 'employee') && (
+          <li>
+            <Link to="/employee-list" className={isActive('/employee-list') ? 'active' : ''}>
+              Employee List
+            </Link>
+          </li>
+        )}
       </ul>
       <button onClick={handleLogout} className="logout-button">Logout</button>
     </div>
