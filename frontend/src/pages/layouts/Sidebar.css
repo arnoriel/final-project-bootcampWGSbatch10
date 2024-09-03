@@ -1,7 +1,8 @@
+/* Desain Sidebar */
 .sidebar {
   width: 250px;
   height: 100vh;
-  background-color: #1e3a8a; /* Navy blue */
+  background: linear-gradient(145deg, #3b82f6, #9333ea); /* Gradient dari biru ke ungu */
   padding-top: 20px;
   position: fixed;
   top: 0;
@@ -9,21 +10,23 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: 1000; /* Ensure the sidebar stays on top */
+  z-index: 1000;
   box-sizing: border-box;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15); /* Soft shadow */
-  border-top-right-radius: 15px; /* Rounded top-right corner */
-  border-bottom-right-radius: 15px; /* Rounded bottom-right corner */
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
 }
 
 .sidebar-title {
   font-size: 28px;
-  color: #ffffff; /* White text */
+  color: #ffffff;
   font-weight: bold;
-  margin-bottom: 30px; /* Space between title and links */
+  margin-bottom: 30px;
   text-align: center;
   width: 100%;
-  letter-spacing: 1.5px; /* Slight letter spacing for modern look */
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .sidebar ul {
@@ -38,47 +41,47 @@
 
 .sidebar ul li a {
   display: block;
-  color: #ffffff; /* White text */
+  color: #ffffff;
   text-decoration: none;
   padding: 15px 20px;
-  width: 100%;
+  width: 90%;
+  margin: 5px auto;
   text-align: center;
   transition: background-color 0.3s, color 0.3s;
   box-sizing: border-box;
-  border-radius: 25px; /* Rounded corners for links */
-  margin: 5px 0; /* Space between links */
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .sidebar ul li a:hover {
-  background-color: #3b82f6; /* Light blue */
-  color: #ffffff; /* Keep white text on hover */
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .sidebar ul li a.active {
-  background-color: #2563eb; /* Lighter navy blue */
+  background-color: #7c3aed;
   font-weight: bold;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25); /* More pronounced shadow for active link */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
 }
 
+/* Desain Tombol Logout */
 .logout-button {
-  margin-top: 20px; /* Adjust to move button slightly up */
+  margin-top: 20px;
   padding: 12px 25px;
-  background-color: transparent; /* Start with transparent background */
-  color: #f44336; /* Red text */
-  border: 2px solid #f44336; /* Red outline */
-  border-radius: 50px; /* Fully rounded button */
+  background-color: transparent;
+  color: #f44336; /* Warna merah modern */
+  border: 2px solid #f44336;
+  border-radius: 10px; /* Rounded corners */
   cursor: pointer;
-  width: 80%; /* Centered button with some padding */
+  width: 80%;
   text-align: center;
-  transition: background-color 0.3s, color 0.3s, border-color 0.3s; /* Smooth transition */
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
   font-size: 16px;
 }
 
 .logout-button:hover {
-  background-color: #f44336; /* Red background on hover */
-  color: #ffffff; /* White text on hover */
-  border-color: #f44336; /* Maintain red border */
+  background-color: #f44336;
+  color: #ffffff;
+  border-color: #f44336;
 }
-
-

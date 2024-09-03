@@ -130,11 +130,10 @@ app.post('/api/login', async (req, res) => {
             return res.status(403).json({ message: 'You are not Allowed' });
         }
 
-        // Generate token and set active session
+        // Generate token without expiration
         const token = jwt.sign(
             { id: user.rows[0].id, email: user.rows[0].email, role: user.rows[0].role },
-            'your_jwt_secret',
-            { expiresIn: '1h' }
+            'your_jwt_secret'
         );
 
         await pool.query(
@@ -148,6 +147,7 @@ app.post('/api/login', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 // Logout user
 app.post('/api/logout', async (req, res) => {
@@ -199,6 +199,26 @@ app.get('/api/users', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM users ORDER BY updated_at DESC');
         res.status(200).json(result.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Endpoint to get active status of users
+app.get('/api/users/status', async (req, res) => {
+    try {
+        const users = await pool.query(
+            `SELECT u.id, u.name, u.email, 
+                    CASE 
+                        WHEN a.session_token IS NOT NULL THEN 'online' 
+                        ELSE 'offline' 
+                    END AS status
+             FROM users u
+             LEFT JOIN active_sessions a ON u.id = a.user_id`
+        );
+
+        res.status(200).json(users.rows);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
