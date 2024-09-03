@@ -1,0 +1,8 @@
+Day 11 Target:
+
+- Added User Lists page
+- Changed Sidebar Theme
+- Added online and offline status
+- Added Logout button Modal
+- Updated timezone setting in last_active
+- Added error deleting user when user is online
