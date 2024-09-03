@@ -283,6 +283,16 @@ app.delete('/api/admins/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
+        // Cek apakah admin sedang online
+        const activeSession = await pool.query(
+            'SELECT * FROM active_sessions WHERE user_id = $1',
+            [id]
+        );
+
+        if (activeSession.rows.length > 0) {
+            return res.status(403).json({ message: 'Cannot delete admin while online' });
+        }
+
         const admin = await pool.query('SELECT * FROM users WHERE id = $1 AND role = $2', [id, 'admin']);
         if (admin.rows.length === 0) {
             return res.status(404).json({ message: 'Admin not found' });
@@ -358,6 +368,16 @@ app.delete('/api/employees/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
+        // Cek apakah user employee sedang online
+        const activeSession = await pool.query(
+            'SELECT * FROM active_sessions WHERE user_id = $1',
+            [id]
+        );
+
+        if (activeSession.rows.length > 0) {
+            return res.status(403).json({ message: 'Cannot delete user while online' });
+        }
+
         const employee = await pool.query('SELECT * FROM users WHERE id = $1 AND role = $2', [id, 'employee']);
         if (employee.rows.length === 0) {
             return res.status(404).json({ message: 'Employee not found' });

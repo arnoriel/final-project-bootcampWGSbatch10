@@ -43,6 +43,7 @@ const ManageEmployees = () => {
   const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageOptions[0]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState(null);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
       fetchEmployees();
@@ -184,16 +185,20 @@ const ManageEmployees = () => {
   };
 
   const confirmDeleteEmployee = async () => {
-      if (employeeToDelete) {
-          try {
-              await axios.delete(`http://localhost:5000/api/employees/${employeeToDelete.id}`);
-              fetchEmployees();
-              setShowDeleteModal(false);
-          } catch (error) {
-              console.error('Error deleting employee:', error);
-          }
-      }
-  };
+    if (employeeToDelete) {
+        try {
+            await axios.delete(`http://localhost:5000/api/employees/${employeeToDelete.id}`);
+            fetchEmployees();
+            setShowDeleteModal(false);
+        } catch (error) {
+            if (error.response && error.response.status === 403) {
+                setDeleteError('Cannot delete user while online');
+            } else {
+                console.error('Error deleting employee:', error);
+            }
+        }
+    }
+};
 
   const handleEditClick = (employee) => {
       setEditingEmployee({
@@ -434,21 +439,26 @@ const ManageEmployees = () => {
                 </div>
             </div>
 
-            {/* Modal Delete Confirmation */}
-            <div className={`modal fade ${showDeleteModal ? 'show d-block' : ''}`} tabIndex="-1" style={{ backgroundColor: showDeleteModal ? 'rgba(0,0,0,0.5)' : '' }}>
-                <div className="modal-dialog modal-dialog-centered">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">Confirm Delete</h5>
-                            <button type="button" className="btn-close" onClick={() => setShowDeleteModal(false)}></button>
-                        </div>
-                        <div className="modal-body">
-                            <p>Are you sure you want to delete this employee?</p>
-                            <p><strong>{employeeToDelete?.name}</strong></p>
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Cancel</button>
-                            <button type="button" className="btn btn-danger" onClick={confirmDeleteEmployee}>Delete</button>
+              {/* Modal Confirm Delete */}
+              <div className={`modal fade ${showDeleteModal ? 'show' : ''}`} style={{ display: showDeleteModal ? 'block' : 'none' }}>
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Confirm Delete</h5>
+                                <button type="button" className="btn-close" onClick={() => setShowDeleteModal(false)}></button>
+                            </div>
+                            <div className="modal-body">
+                                <p>Are you sure you want to delete this employee?</p>
+                                <p><strong>{employeeToDelete?.name}</strong></p>
+                                {deleteError && (
+                                    <div className="alert alert-danger">
+                                        {deleteError}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Cancel</button>
+                                <button type="button" className="btn btn-danger" onClick={confirmDeleteEmployee}>Delete</button>
                             </div>
                         </div>
                     </div>
