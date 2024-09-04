@@ -1,0 +1,5 @@
+Day 12 Target: 
+
+- Show delete and edit error message if user trying to delete them while online
+- Sending account information to gmail inbox
+- Added error log page

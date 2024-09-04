@@ -2,7 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-// import Register from './pages/Register';
+
+// Importing all the necessary components
 import Login from './pages/Login';
 import Forgot from './pages/Forgot';
 import Superadmin from './pages/Superadmin';
@@ -12,7 +13,8 @@ import Welcome from './pages/Welcome';
 import ManageAdmins from './pages/Manage-admins';
 import ManageEmployees from './pages/Manage-employees';
 import UserList from './pages/User-list';
-import ProtectedRoute from './ProtectedRoute';
+import ErrorLog from './pages/Errorlog'; // Importing the ErrorLog component
+import ProtectedRoute from './ProtectedRoute'; // Assuming ProtectedRoute is in the same directory level as pages
 
 function App() {
   return (
@@ -45,6 +47,14 @@ function App() {
           element={
             <ProtectedRoute role={["superadmin", "admin", "employee"]}>
               <UserList />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/error-log" 
+          element={
+            <ProtectedRoute role="superadmin">
+              <ErrorLog />
             </ProtectedRoute>
           } 
         />

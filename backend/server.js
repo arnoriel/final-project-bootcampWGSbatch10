@@ -88,6 +88,24 @@ const authenticate = async (req, res, next) => {
     }
 };
 
+// Error logging middleware
+app.use(async (err, req, res, next) => {
+    console.error(err.stack);
+
+    // Simpan error ke dalam database
+    try {
+        await pool.query(
+            'INSERT INTO error_logs (error_message, endpoint, stack_trace) VALUES ($1, $2, $3)',
+            [err.message, req.originalUrl, err.stack]
+        );
+    } catch (dbError) {
+        console.error('Failed to log error to database:', dbError);
+    }
+
+    // Kembalikan response error ke client
+    res.status(500).json({ message: 'Internal server error' });
+});
+
 // Register user with image upload
 app.post('/api/register', upload.single('image'), async (req, res) => {
     const { name, email, phone, division, department, role } = req.body;  // Tambahkan department di sini
@@ -98,8 +116,16 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
     const text = `
     Dear ${name}
 
+    Thanks for submitting your information to our number, here's your User Information for MyOffice App Account.
+
     your email: ${email}
-    here is your password: ${password}
+    your phone: ${phone}
+    your department: ${department}
+    your division: ${division}
+    
+    your password: ${password}
+
+    Please keep this information privately because it's your personal account information, do not send it to others.
     `
     const mailOptions = {
         from: 'no_reply@gmail.com',
@@ -492,6 +518,16 @@ app.post('/api/forgot-password', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+app.get('/api/error-logs', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM error_logs ORDER BY created_at DESC');
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to fetch error logs' });
     }
 });
 

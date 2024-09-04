@@ -27,7 +27,10 @@ const UserList = () => {
                     return { ...user, status: statusInfo ? statusInfo.status : 'offline' }; // Tambahkan status
                 });
 
-                setUsers(usersWithStatus);
+                // Filter out the superadmin (id = 1)
+                const filteredUsers = usersWithStatus.filter(user => user.id !== 1);
+
+                setUsers(filteredUsers);
             } catch (error) {
                 console.error('Error fetching users or status:', error);
             }

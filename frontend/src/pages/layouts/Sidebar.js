@@ -57,11 +57,18 @@ function Sidebar() {
           </Link>
         </li>
         {role === 'superadmin' && (
-          <li>
-            <Link to="/manageadmins" className={isActive('/manageadmins') ? 'active' : ''}>
-              Manage Admins
-            </Link>
-          </li>
+          <>
+            <li>
+              <Link to="/manageadmins" className={isActive('/manageadmins') ? 'active' : ''}>
+                Manage Admins
+              </Link>
+            </li>
+            <li>
+              <Link to="/error-log" className={isActive('/error-log') ? 'active' : ''}>
+                Error Log
+              </Link>
+            </li>
+          </>
         )}
         {(role === 'superadmin' || role === 'admin') && (
           <li>
