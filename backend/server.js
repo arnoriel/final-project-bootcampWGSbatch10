@@ -8,6 +8,8 @@ const multer = require('multer');
 const path = require('path');
 const app = express();
 const port = 5000;
+const nodemailer = require('nodemailer');
+const dotenv = require('dotenv').config();
 
 // PostgreSQL connection
 const pool = new Pool({
@@ -36,14 +38,22 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Generate random password
-const generateRandomPassword = () => {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
-    let password = '';
-    for (let i = 0; i < 10; i++) { // Panjang password 10 karakter
-        password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
+const generateReadablePassword = () => {
+    const words = ['Blue', 'Sky', 'Green', 'Leaf', 'Bright', 'Star'];
+    const symbols = '!@#$%^&*';
+    let password = `${words[Math.floor(Math.random() * words.length)]}${Math.floor(1000 + Math.random() * 9000)}${symbols[Math.floor(Math.random() * symbols.length)]}`;
     return password;
 };
+
+const transport = nodemailer.createTransport({
+    host: process.env.MAIL_HOST,
+    port: process.env.MAIL_PORT || 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASSWORD,
+    }
+});
 
 // Middleware untuk autentikasi
 const authenticate = async (req, res, next) => {
@@ -84,7 +94,19 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
     
     const userRole = role || 'employee';
-    const password = generateRandomPassword();
+    const password = generateReadablePassword();
+    const text = `
+    Dear ${name}
+
+    your email: ${email}
+    here is your password: ${password}
+    `
+    const mailOptions = {
+        from: 'no_reply@gmail.com',
+        to: email,
+        subject: 'New MyOffice account',
+        text
+    };
 
     try {
         const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -99,6 +121,14 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP)`,
             [name, email, hashedPassword, phone, division, department, imagePath, userRole]  // Tambahkan department ke query
         );
+
+        transport.sendMail(mailOptions, function(error, info) {
+            if (error) {
+                console.log({error: error.message})
+            } else {
+                console.log('Email sent: ' + info.response);
+            }
+        });
 
         console.log(`User created with email: ${email}, password: ${password}`);
 
