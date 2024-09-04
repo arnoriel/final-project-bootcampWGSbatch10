@@ -252,10 +252,20 @@ app.get('/api/admins', async (req, res) => {
 // PUT Admin
 app.put('/api/admins/:id', upload.single('image'), async (req, res) => {
     const { id } = req.params;
-    const { name, email, phone, division, department } = req.body;  // Tambahkan department di sini
+    const { name, email, phone, division, department } = req.body;
     let imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
     try {
+        // Cek apakah admin sedang online
+        const activeSession = await pool.query(
+            'SELECT * FROM active_sessions WHERE user_id = $1',
+            [id]
+        );
+
+        if (activeSession.rows.length > 0) {
+            return res.status(403).json({ message: 'Cannot edit admin while online' });
+        }
+
         const admin = await pool.query('SELECT * FROM users WHERE id = $1 AND role = $2', [id, 'admin']);
         if (admin.rows.length === 0) {
             return res.status(404).json({ message: 'Admin not found' });
@@ -269,7 +279,7 @@ app.put('/api/admins/:id', upload.single('image'), async (req, res) => {
         await pool.query(
             `UPDATE users SET name = $1, email = $2, phone = $3, division = $4, department = $5, images = $6, updated_at = CURRENT_TIMESTAMP 
             WHERE id = $7`,
-            [name, email, phone, division, department, imagePath, id]  // Tambahkan department ke query
+            [name, email, phone, division, department, imagePath, id]
         );
 
         res.status(200).json({ message: 'Admin updated successfully' });
@@ -336,10 +346,20 @@ app.get('/api/employees', async (req, res) => {
 // PUT Employee
 app.put('/api/employees/:id', upload.single('image'), async (req, res) => {
     const { id } = req.params;
-    const { name, email, phone, division, department } = req.body;  // Tambahkan department di sini
+    const { name, email, phone, division, department } = req.body;
     let imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
     try {
+        // Cek apakah employee sedang online
+        const activeSession = await pool.query(
+            'SELECT * FROM active_sessions WHERE user_id = $1',
+            [id]
+        );
+
+        if (activeSession.rows.length > 0) {
+            return res.status(403).json({ message: 'Cannot edit employee while online' });
+        }
+
         const employee = await pool.query('SELECT * FROM users WHERE id = $1 AND role = $2', [id, 'employee']);
         if (employee.rows.length === 0) {
             return res.status(404).json({ message: 'Employee not found' });
@@ -353,7 +373,7 @@ app.put('/api/employees/:id', upload.single('image'), async (req, res) => {
         await pool.query(
             `UPDATE users SET name = $1, email = $2, phone = $3, division = $4, department = $5, images = $6, updated_at = CURRENT_TIMESTAMP 
             WHERE id = $7`,
-            [name, email, phone, division, department, imagePath, id]  // Tambahkan department ke query
+            [name, email, phone, division, department, imagePath, id]
         );
 
         res.status(200).json({ message: 'Employee updated successfully' });

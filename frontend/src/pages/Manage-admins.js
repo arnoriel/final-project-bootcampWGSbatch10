@@ -43,6 +43,8 @@ const ManageAdmins = () => {
     const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageOptions[0]);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [adminToDelete, setAdminToDelete] = useState(null);
+    const [deleteError, setDeleteError] = useState('');
+    const [editError, setEditError] = useState('');
 
     useEffect(() => {
         fetchAdmins();
@@ -164,8 +166,13 @@ const ManageAdmins = () => {
             fetchAdmins();
             resetEditingAdminForm();
             setShowUpdateModal(false);
+            setEditError('');  // Reset error message
         } catch (error) {
-            console.error(error);
+            if (error.response && error.response.status === 403) {
+                setEditError('Cannot edit user while online');
+            } else {
+                console.error(error);
+            }
         }
     };
 
@@ -181,6 +188,7 @@ const ManageAdmins = () => {
     const handleDeleteClick = (admin) => {
         setAdminToDelete(admin);
         setShowDeleteModal(true);
+        setDeleteError('');
     };
 
     const confirmDeleteAdmin = async () => {
@@ -190,7 +198,11 @@ const ManageAdmins = () => {
                 fetchAdmins();
                 setShowDeleteModal(false);
             } catch (error) {
-                console.error('Error deleting admin:', error);
+                if (error.response && error.response.status === 403) {
+                    setDeleteError('Cannot delete user while online');
+                } else {
+                    console.error('Error deleting employee:', error);
+                }
             }
         }
     };
@@ -228,6 +240,10 @@ const ManageAdmins = () => {
     const handleCancel = (modalType) => {
         setCurrentModal(modalType);
         setShowDiscardModal(true);
+
+        // Reset error messages
+        setDeleteError('');
+        setEditError('');
     };
 
     const confirmDiscardChanges = () => {
@@ -346,6 +362,11 @@ const ManageAdmins = () => {
                                 <button type="button" className="btn-close" onClick={() => handleCancel('update')}></button>
                             </div>
                             <div className="modal-body">
+                            {editError && (
+                                    <div className="alert alert-danger">
+                                        {editError}
+                                    </div>
+                                )}
                                 <label>Name</label>
                                 <input
                                     type="text"
@@ -445,6 +466,12 @@ const ManageAdmins = () => {
                             <div className="modal-body">
                                 <p>Are you sure you want to delete this admin?</p>
                                 <p><strong>{adminToDelete?.name}</strong></p>
+                                {deleteError && (
+                                    <div className="alert alert-danger d-flex justify-content-between">
+                                        <span>{deleteError}</span>
+                                        <button type="button" className="btn-close btn-sm" onClick={() => setDeleteError('')}></button>
+                                    </div>
+                                )}
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Cancel</button>
