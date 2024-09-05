@@ -65,7 +65,7 @@ const UserList = () => {
         <div>
             <Sidebar />
             <div className="main-content">
-                <h1>Employer List</h1>
+                <h2>Employer List</h2>
                 <input
                     type="text"
                     placeholder="Search employers..."

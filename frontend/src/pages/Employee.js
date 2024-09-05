@@ -52,7 +52,7 @@ function Employee() {
     <div>
       <Sidebar />
       <div className="main-content">
-        <h1>Welcome, {name}</h1>
+        <h2>Welcome, {name}</h2>
       </div>
     </div>
   );

@@ -504,7 +504,7 @@ app.post('/api/forgot-password', async (req, res) => {
         }
 
         // Generate password baru
-        const newPassword = generateRandomPassword();
+        const newPassword = generateReadablePassword();
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         // Update password di database
@@ -513,9 +513,36 @@ app.post('/api/forgot-password', async (req, res) => {
             [hashedPassword, email]
         );
 
+        // Kirim email reset password
+        const resetMailOptions = {
+            from: 'no_reply@gmail.com',
+            to: email,
+            subject: 'Password Reset for MyOffice',
+            text: `
+                Dear User,
+
+                Your password has been reset. Please use the following new password to log in:
+
+                New Password: ${newPassword}
+
+                Make sure to change this password immediately after logging in.
+
+                Regards,
+                MyOffice Team
+            `
+        };
+
+        transport.sendMail(resetMailOptions, (error, info) => {
+            if (error) {
+                console.log('Error sending email:', error.message);
+            } else {
+                console.log('Password reset email sent:', info.response);
+            }
+        });
+
         console.log(`Password reset for ${email}: ${newPassword}`);
-        
-        res.status(200).json({ message: 'Your password has reset, ask Admin/Operator for the Password' });
+
+        res.status(200).json({ message: 'Password reset successfully. Please check your email for the new password.' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
