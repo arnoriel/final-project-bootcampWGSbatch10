@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Auth.css';
 
@@ -8,11 +8,27 @@ function Login() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Cek apakah user sudah login saat pertama kali halaman di-load
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    
+    if (token && role) {
+      if (role === 'superadmin') {
+        navigate('/superadmin');
+      } else if (role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/employee');
+      }
+    }
+  }, [navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:5000/api/login', {
+      const response = await fetch('http://10.10.101.169:5000/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

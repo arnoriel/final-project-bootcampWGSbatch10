@@ -110,7 +110,7 @@ app.use(async (err, req, res, next) => {
 app.post('/api/register', upload.single('image'), async (req, res) => {
     const { name, email, phone, division, department, role } = req.body;  // Tambahkan department di sini
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
-    
+    const link = 'http://10.10.101.169:3000'
     const userRole = role || 'employee';
     const password = generateReadablePassword();
     const text = `
@@ -126,6 +126,7 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
     your password: ${password}
 
     Please keep this information privately because it's your personal account information, do not send it to others.
+    Open MyOffice app: ${link}
     `
     const mailOptions = {
         from: 'no_reply@gmail.com',
@@ -532,5 +533,5 @@ app.get('/api/error-logs', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+    console.log(`Server running on http://10.10.101.169:${port}`);
 });
