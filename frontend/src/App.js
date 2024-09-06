@@ -13,6 +13,7 @@ import Welcome from './pages/Welcome';
 import ManageAdmins from './pages/Manage-admins';
 import ManageEmployees from './pages/Manage-employees';
 import UserList from './pages/User-list';
+import Attendance from './pages/Attendance';
 import ErrorLog from './pages/Errorlog'; // Importing the ErrorLog component
 import ProtectedRoute from './ProtectedRoute'; // Assuming ProtectedRoute is in the same directory level as pages
 
@@ -26,37 +27,45 @@ function App() {
         <Route path="/superadmin" element={<Superadmin />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/employee" element={<Employee />} />
-        <Route 
-          path="/manageadmins" 
+        <Route
+          path="/manageadmins"
           element={
             <ProtectedRoute role="superadmin">
               <ManageAdmins />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/manageemployees" 
+        <Route
+          path="/manageemployees"
           element={
             <ProtectedRoute role={["superadmin", "admin"]}>
               <ManageEmployees />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/employee-list" 
+        <Route
+          path="/employee-list"
           element={
             <ProtectedRoute role={["superadmin", "admin", "employee"]}>
               <UserList />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/error-log" 
+        <Route
+          path="/error-log"
           element={
             <ProtectedRoute role="superadmin">
               <ErrorLog />
             </ProtectedRoute>
-          } 
+          }
+        />
+        <Route
+          path="/attendance"
+          element={
+            <ProtectedRoute role={["superadmin", "admin", "employee"]}>
+              <Attendance />
+            </ProtectedRoute>
+          }
         />
       </Routes>
     </Router>

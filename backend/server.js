@@ -106,6 +106,25 @@ app.use(async (err, req, res, next) => {
     res.status(500).json({ message: 'Internal server error' });
 });
 
+// Get attendance based on active sessions
+app.get('/api/attendance', authenticate, async (req, res) => {
+    try {
+        const attendanceData = await pool.query(
+            `SELECT u.id, u.name, u.email, a.signin_at, a.logout_at 
+             FROM users u 
+             INNER JOIN active_sessions a 
+             ON u.id = a.user_id 
+             WHERE a.signin_at::date = CURRENT_DATE
+             ORDER BY a.signin_at DESC`
+        );
+
+        res.status(200).json(attendanceData.rows);
+    } catch (error) {
+        console.error('Error fetching attendance:', error);
+        res.status(500).json({ message: 'Failed to fetch attendance data' });
+    }
+});
+
 // Register user with image upload
 app.post('/api/register', upload.single('image'), async (req, res) => {
     const { name, email, phone, division, department, role } = req.body;  // Tambahkan department di sini
@@ -194,9 +213,9 @@ app.post('/api/login', async (req, res) => {
         );
 
         await pool.query(
-            'INSERT INTO active_sessions (user_id, session_token) VALUES ($1, $2)',
+            'INSERT INTO active_sessions (user_id, session_token, signin_at) VALUES ($1, $2, CURRENT_TIMESTAMP)',
             [user.rows[0].id, token]
-        );
+        );        
 
         res.json({ message: 'Login successful', token, role: user.rows[0].role });
     } catch (error) {
@@ -207,12 +226,26 @@ app.post('/api/login', async (req, res) => {
 
 
 // Logout user
-app.post('/api/logout', async (req, res) => {
-    const token = req.body.token;
+app.post('/api/logout', authenticate, async (req, res) => {
+    const authorizationHeader = req.headers.authorization;
+
+    if (!authorizationHeader) {
+        return res.status(401).json({ message: 'Authorization header missing' });
+    }
+
+    const token = authorizationHeader.split(' ')[1];  // Mengambil token dari Authorization header
 
     try {
-        await pool.query('DELETE FROM active_sessions WHERE session_token = $1', [token]);
-        res.json({ message: 'Logout successful' });
+        const updateLogout = await pool.query(
+            'UPDATE active_sessions SET logout_at = CURRENT_TIMESTAMP WHERE session_token = $1 RETURNING *',
+            [token]
+        );
+
+        if (updateLogout.rows.length === 0) {
+            return res.status(400).json({ message: 'Session not found or already logged out' });
+        }
+
+        res.json({ message: 'Logout successful', logout_at: updateLogout.rows[0].logout_at });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });

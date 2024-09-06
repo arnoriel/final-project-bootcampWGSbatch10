@@ -12,25 +12,28 @@ function Sidebar() {
 
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
-
+  
     try {
       const response = await fetch('http://10.10.101.169:5000/api/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,  // Menambahkan Bearer token di Authorization header
         },
-        body: JSON.stringify({ token }),
       });
-
+  
       if (response.ok) {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
         navigate('/login');
+      } else {
+        console.error('Logout failed:', response.status);
       }
     } catch (error) {
       console.error('Logout error:', error);
     }
   };
+  
 
   const isActive = (path) => location.pathname === path;
 
@@ -78,11 +81,18 @@ function Sidebar() {
           </li>
         )}
         {(role === 'superadmin' || role === 'admin' || role === 'employee') && (
-          <li>
-            <Link to="/employee-list" className={isActive('/employee-list') ? 'active' : ''}>
-              Employer List
-            </Link>
-          </li>
+          <>
+            <li>
+              <Link to="/employee-list" className={isActive('/employee-list') ? 'active' : ''}>
+                Employee List
+              </Link>
+            </li>
+            <li>
+              <Link to="/attendance" className={isActive('/attendance') ? 'active' : ''}>
+                Attendance
+              </Link>
+            </li>
+          </>
         )}
       </ul>
       <button onClick={handleLogoutClick} className="logout-button">
