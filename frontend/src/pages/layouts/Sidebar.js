@@ -12,28 +12,25 @@ function Sidebar() {
 
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
-  
+
     try {
       const response = await fetch('http://10.10.101.169:5000/api/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,  // Menambahkan Bearer token di Authorization header
         },
+        body: JSON.stringify({ token }),
       });
-  
+
       if (response.ok) {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
         navigate('/login');
-      } else {
-        console.error('Logout failed:', response.status);
       }
     } catch (error) {
       console.error('Logout error:', error);
     }
   };
-  
 
   const isActive = (path) => location.pathname === path;
 

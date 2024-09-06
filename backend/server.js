@@ -83,20 +83,10 @@ const authenticate = async (req, res, next) => {
         req.user = decoded; // Simpan data user ke request
         next();
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(403).json({ message: 'Invalid token' });
     }
 };
-
-// Endpoint untuk mendapatkan semua error logs
-app.get('/api/error-logs', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM error_logs ORDER BY created_at DESC');
-        res.status(200).json(result.rows);
-    } catch (error) {
-        console.error('Error fetching error logs:', error);
-        res.status(500).json({ message: 'Failed to fetch error logs' });
-    }
-});
 
 // Error logging middleware
 app.use(async (err, req, res, next) => {
@@ -105,7 +95,7 @@ app.use(async (err, req, res, next) => {
     // Simpan error ke dalam database
     try {
         await pool.query(
-            'INSERT INTO error_logs (error_message, endpoint, stack_trace, created_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP)',
+            'INSERT INTO error_logs (error_message, endpoint, stack_trace) VALUES ($1, $2, $3)',
             [err.message, req.originalUrl, err.stack]
         );
     } catch (dbError) {
@@ -114,49 +104,6 @@ app.use(async (err, req, res, next) => {
 
     // Kembalikan response error ke client
     res.status(500).json({ message: 'Internal server error' });
-});
-
-
-const cron = require('node-cron');
-
-// Fungsi untuk reset attendance setiap hari pada pukul 00:00
-cron.schedule('0 0 * * *', async () => {
-    try {
-        // Pindahkan attendance dari hari ini ke tabel arsip
-        await pool.query(`
-            INSERT INTO attendance_archive (user_id, signin_at, logout_at)
-            SELECT user_id, signin_at, logout_at
-            FROM active_sessions
-            WHERE signin_at::date = CURRENT_DATE
-        `);
-
-        // Hapus data attendance aktif setelah dipindahkan
-        await pool.query(`
-            DELETE FROM active_sessions WHERE signin_at::date = CURRENT_DATE
-        `);
-
-        console.log('Attendance reset and archived successfully');
-    } catch (error) {
-        console.error('Error during attendance reset:', error);
-    }
-});
-
-// Endpoint untuk mendapatkan data attendance
-app.get('/api/attendance', authenticate, async (req, res, next) => {
-    try {
-        const attendanceData = await pool.query(
-            `SELECT u.id, u.name, u.email, a.signin_at, a.logout_at 
-             FROM users u 
-             INNER JOIN active_sessions a 
-             ON u.id = a.user_id 
-             WHERE a.signin_at::date = CURRENT_DATE
-             ORDER BY a.signin_at DESC`
-        );
-
-        res.status(200).json(attendanceData.rows);
-    } catch (error) {
-        next(error); // Kirimkan error ke middleware
-    }
 });
 
 // Register user with image upload
@@ -214,7 +161,8 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
 
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -236,7 +184,7 @@ app.post('/api/login', async (req, res) => {
         // Check if user is already active in another session
         const activeSession = await pool.query('SELECT * FROM active_sessions WHERE user_id = $1', [user.rows[0].id]);
         if (activeSession.rows.length > 0) {
-            return res.status(403).json({ message: 'You are not Allowed' });
+            return res.status(403).json({ message: 'You are not allowed' });
         }
 
         // Generate token without expiration
@@ -245,41 +193,58 @@ app.post('/api/login', async (req, res) => {
             'your_jwt_secret'
         );
 
+        // Insert new session with current timestamp
         await pool.query(
-            'INSERT INTO active_sessions (user_id, session_token, signin_at) VALUES ($1, $2, CURRENT_TIMESTAMP)',
+            'INSERT INTO active_sessions (user_id, session_token, signin_at) VALUES ($1, $2, NOW())',
             [user.rows[0].id, token]
-        );        
+        );
 
         res.json({ message: 'Login successful', token, role: user.rows[0].role });
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
+// Endpoint untuk mendapatkan data attendance
+app.get('/api/attendance', async (req, res) => {
+    try {
+        const attendanceData = await pool.query(`
+            SELECT 
+                u.id as user_id, 
+                u.name, 
+                a.signin_at as time_in, 
+                a.logout_at as time_out 
+            FROM users u 
+            INNER JOIN active_sessions a ON u.id = a.user_id
+            ORDER BY a.signin_at DESC
+        `);
+
+        res.status(200).json(attendanceData.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to fetch attendance data' });
+    }
+});
 
 // Logout user
-app.post('/api/logout', authenticate, async (req, res) => {
-    const authorizationHeader = req.headers.authorization;
-
-    if (!authorizationHeader) {
-        return res.status(401).json({ message: 'Authorization header missing' });
-    }
-
-    const token = authorizationHeader.split(' ')[1];  // Mengambil token dari Authorization header
+app.post('/api/logout', async (req, res) => {
+    const token = req.body.token;
 
     try {
-        const updateLogout = await pool.query(
-            'UPDATE active_sessions SET logout_at = CURRENT_TIMESTAMP WHERE session_token = $1 RETURNING *',
+        // Update logout_at time for the session
+        await pool.query(
+            'UPDATE active_sessions SET logout_at = NOW() WHERE session_token = $1',
             [token]
         );
 
-        if (updateLogout.rows.length === 0) {
-            return res.status(400).json({ message: 'Session not found or already logged out' });
-        }
+        // Delete the session after updating the logout time
+        await pool.query('DELETE FROM active_sessions WHERE session_token = $1', [token]);
 
-        res.json({ message: 'Logout successful', logout_at: updateLogout.rows[0].logout_at });
+        res.json({ message: 'Logout successful' });
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -294,7 +259,8 @@ app.use('/api/protected-route', async (req, res, next) => {
         }
         next();
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -310,7 +276,8 @@ app.get('/api/user', authenticate, async (req, res) => {
 
         res.json({ name: user.rows[0].name });
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -319,7 +286,8 @@ app.get('/api/users', async (req, res) => {
         const result = await pool.query('SELECT * FROM users ORDER BY updated_at DESC');
         res.status(200).json(result.rows);
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -338,7 +306,8 @@ app.get('/api/users/status', async (req, res) => {
 
         res.status(200).json(users.rows);
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -361,7 +330,8 @@ app.get('/api/admins', async (req, res) => {
             }))
         });
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -400,7 +370,8 @@ app.put('/api/admins/:id', upload.single('image'), async (req, res) => {
 
         res.status(200).json({ message: 'Admin updated successfully' });
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -427,7 +398,8 @@ app.delete('/api/admins/:id', async (req, res) => {
 
         res.status(200).json({ message: 'Admin deleted successfully' });
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -452,7 +424,8 @@ app.get('/api/employees', async (req, res) => {
             }))
         });
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -491,7 +464,8 @@ app.put('/api/employees/:id', upload.single('image'), async (req, res) => {
 
         res.status(200).json({ message: 'Employee updated successfully' });
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -519,7 +493,8 @@ app.delete('/api/employees/:id', async (req, res) => {
 
         res.status(200).json({ message: 'Employee deleted successfully' });
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -542,7 +517,8 @@ app.get('/api/search', async (req, res) => {
 
         res.status(200).json(result.rows);
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -597,7 +573,8 @@ app.post('/api/forgot-password', async (req, res) => {
 
         res.status(200).json({ message: 'Password reset successfully. Please check your email for the new password.' });
     } catch (error) {
-        next(error); // Kirimkan error ke middleware
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 

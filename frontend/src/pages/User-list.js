@@ -27,8 +27,8 @@ const UserList = () => {
                     return { ...user, status: statusInfo ? statusInfo.status : 'offline' }; // Tambahkan status
                 });
 
-                // Filter out the superadmin (id = 1)
-                const filteredUsers = usersWithStatus.filter(user => user.id !== 1);
+                // Filter out superadmin berdasarkan role
+                const filteredUsers = usersWithStatus.filter(user => user.role !== 'superadmin');
 
                 setUsers(filteredUsers);
             } catch (error) {
@@ -65,10 +65,10 @@ const UserList = () => {
         <div>
             <Sidebar />
             <div className="main-content">
-                <h2>Employer List</h2>
+                <h2>User List</h2>
                 <input
                     type="text"
-                    placeholder="Search employers..."
+                    placeholder="Search users..."
                     value={searchTerm}
                     onChange={handleSearch}
                     style={{ marginBottom: '20px', padding: '10px', width: '100%' }}
