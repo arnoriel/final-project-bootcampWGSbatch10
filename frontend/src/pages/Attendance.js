@@ -30,16 +30,15 @@ const Attendance = () => {
     if (attendanceData.length === 0) {
       return <p>No attendance records found.</p>;
     }
-
+  
     return attendanceData.map((record) => (
       <tr key={record.user_id}>
-        <td>{record.user_id}</td>
-        <td>{record.name}</td> {/* Use `record.name` to display user name */}
-        <td>{new Date(Date.parse(record.login_at)).toLocaleString()}</td>
-        <td>{record.logout_at ? new Date(record.logout_at).toLocaleString() : 'Still logged in'}</td> {/* Display logout time or "Still logged in" */}
+        <td>{record.name}</td>
+        <td>{new Date(record.login_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}</td> 
+        <td>{record.logout_at ? new Date(record.logout_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) : 'Still logged in'}</td>
       </tr>
     ));
-  };
+  };  
 
   return (
     <div>
@@ -50,7 +49,6 @@ const Attendance = () => {
       <table className="table">
         <thead>
           <tr>
-            <th>User ID</th>
             <th>User Name</th>
             <th>Login Time</th>
             <th>Logout Time</th>

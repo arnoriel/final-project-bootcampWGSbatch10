@@ -216,8 +216,8 @@ app.get('/api/attendance', async (req, res) => {
             SELECT 
                 u.id as user_id, 
                 u.name, 
-                to_char(a.login_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as login_at, 
-                to_char(a.logout_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as logout_at 
+                to_char(a.login_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as login_at, 
+                to_char(a.logout_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as logout_at 
             FROM users u 
             INNER JOIN attendance a ON u.id = a.user_id
             ORDER BY a.login_at DESC
@@ -229,6 +229,7 @@ app.get('/api/attendance', async (req, res) => {
         res.status(500).json({ message: 'Failed to fetch attendance data' });
     }
 });
+
 
 // Logout user
 app.post('/api/logout', async (req, res) => {
