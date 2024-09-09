@@ -1,0 +1,46 @@
+/* Attendance.css */
+
+/* Styling untuk modal */
+.modal {
+    display: none; /* Awalnya modal disembunyikan */
+    position: fixed; /* Modal tetap di layar meskipun kita scroll */
+    z-index: 1; /* Memastikan modal berada di atas konten lainnya */
+    left: 0;
+    top: 0;
+    width: 100%; /* Lebar penuh layar */
+    height: 100%; /* Tinggi penuh layar */
+    background-color: rgba(0, 0, 0, 0.5); /* Background semi-transparan */
+  }
+  
+  /* Konten modal */
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* Jarak vertikal */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Lebar modal */
+    max-width: 600px; /* Max width modal */
+    border-radius: 8px; /* Membuat sudut membulat */
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); /* Shadow */
+  }
+  
+  /* Tombol close (X) */
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  /* Menampilkan modal saat state modal aktif */
+  .modal.show {
+    display: block;
+  }
+  

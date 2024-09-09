@@ -272,15 +272,12 @@ app.get('/api/attendance', async (req, res) => {
             dateCondition = `a.login_at::date = current_date - interval '1 day'`;
             break;
         case 'last_week':
-            // Ambil semua data dari seminggu terakhir
             dateCondition = `a.login_at >= current_date - interval '7 days'`;
             break;
         case 'last_month':
-            // Ambil semua data dari sebulan terakhir
             dateCondition = `a.login_at >= current_date - interval '1 month'`;
             break;
         case 'last_year':
-            // Ambil semua data dari setahun terakhir
             dateCondition = `a.login_at >= current_date - interval '1 year'`;
             break;
         case 'today':
@@ -295,7 +292,14 @@ app.get('/api/attendance', async (req, res) => {
                 u.id as user_id, 
                 u.name, 
                 to_char(a.login_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as login_at, 
-                to_char(a.logout_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as logout_at 
+                to_char(a.logout_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as logout_at,
+                -- Hitung total waktu kerja
+                CASE 
+                    WHEN a.logout_at IS NOT NULL THEN 
+                        to_char(a.logout_at - a.login_at, 'HH24:MI:SS')
+                    ELSE 
+                        NULL
+                END as total_work_time
             FROM users u 
             INNER JOIN attendance a ON u.id = a.user_id
             WHERE ${dateCondition}

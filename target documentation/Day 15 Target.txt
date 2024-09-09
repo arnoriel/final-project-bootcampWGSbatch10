@@ -1,0 +1,6 @@
+Day 15 Target
+
+- Fixed Attendance
+- Added date periods
+- Fixed error log catch
+- Added Time count for User Attendance

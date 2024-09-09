@@ -1,0 +1,5 @@
+Day 13 Target:
+
+- changed localhost setting using IP Address
+- added function to make sure when user after login and tried to log in again, the page directed automatically to dashboard
+- added function reset password message to email
