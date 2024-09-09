@@ -14,7 +14,7 @@ function Sidebar() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch('http://10.10.101.169:5000/api/logout', {
+      const response = await fetch('http://10.10.101.193:5000/api/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

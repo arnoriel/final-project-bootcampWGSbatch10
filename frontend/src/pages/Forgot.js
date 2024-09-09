@@ -12,7 +12,7 @@ function Forgot() {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://10.10.101.169:5000/api/forgot-password', {
+      const response = await fetch('http://10.10.101.193:5000/api/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -181,22 +181,25 @@ app.post('/api/login', async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // Check if user is already active in another session
         const activeSession = await pool.query('SELECT * FROM active_sessions WHERE user_id = $1', [user.rows[0].id]);
         if (activeSession.rows.length > 0) {
             return res.status(403).json({ message: 'You are not allowed' });
         }
 
-        // Generate token without expiration
         const token = jwt.sign(
             { id: user.rows[0].id, email: user.rows[0].email, role: user.rows[0].role },
             'your_jwt_secret'
         );
 
-        // Insert new session with current timestamp
         await pool.query(
             'INSERT INTO active_sessions (user_id, session_token, signin_at) VALUES ($1, $2, NOW())',
             [user.rows[0].id, token]
+        );
+
+        // Insert login record into the attendance table
+        await pool.query(
+            'INSERT INTO attendance (user_id, login_at) VALUES ($1, NOW())',
+            [user.rows[0].id]
         );
 
         res.json({ message: 'Login successful', token, role: user.rows[0].role });
@@ -213,11 +216,11 @@ app.get('/api/attendance', async (req, res) => {
             SELECT 
                 u.id as user_id, 
                 u.name, 
-                a.signin_at as time_in, 
-                a.logout_at as time_out 
+                to_char(a.login_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as login_at, 
+                to_char(a.logout_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as logout_at 
             FROM users u 
-            INNER JOIN active_sessions a ON u.id = a.user_id
-            ORDER BY a.signin_at DESC
+            INNER JOIN attendance a ON u.id = a.user_id
+            ORDER BY a.login_at DESC
         `);
 
         res.status(200).json(attendanceData.rows);
@@ -237,6 +240,18 @@ app.post('/api/logout', async (req, res) => {
             'UPDATE active_sessions SET logout_at = NOW() WHERE session_token = $1',
             [token]
         );
+
+        // Get the user_id associated with this session
+        const session = await pool.query('SELECT user_id FROM active_sessions WHERE session_token = $1', [token]);
+        const userId = session.rows[0]?.user_id;
+
+        // Update the logout time in the attendance table
+        if (userId) {
+            await pool.query(
+                'UPDATE attendance SET logout_at = NOW() WHERE user_id = $1 AND logout_at IS NULL',
+                [userId]
+            );
+        }
 
         // Delete the session after updating the logout time
         await pool.query('DELETE FROM active_sessions WHERE session_token = $1', [token]);

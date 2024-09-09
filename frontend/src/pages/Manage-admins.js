@@ -55,7 +55,7 @@ const ManageAdmins = () => {
             let response;
 
             if (searchQuery) {
-                response = await axios.get('http://10.10.101.169:5000/api/search', {
+                response = await axios.get('http://10.10.101.193:5000/api/search', {
                     params: {
                         query: searchQuery,
                         role: 'admin' // Menambahkan role admin
@@ -63,7 +63,7 @@ const ManageAdmins = () => {
                 });
                 setAdmins(response.data || []);
             } else {
-                response = await axios.get('http://10.10.101.169:5000/api/admins', {
+                response = await axios.get('http://10.10.101.193:5000/api/admins', {
                     params: {
                         page: currentPage,
                         limit: rowsPerPage
@@ -141,7 +141,7 @@ const ManageAdmins = () => {
         formData.append('image', newAdmin.image);
 
         try {
-            await axios.post('http://10.10.101.169:5000/api/register', formData);
+            await axios.post('http://10.10.101.193:5000/api/register', formData);
             fetchAdmins();
             resetNewAdminForm();
             setShowAddModal(false);
@@ -162,7 +162,7 @@ const ManageAdmins = () => {
         formData.append('image', editingAdmin.image);
 
         try {
-            await axios.put(`http://10.10.101.169:5000/api/admins/${editingAdmin.id}`, formData);
+            await axios.put(`http://10.10.101.193:5000/api/admins/${editingAdmin.id}`, formData);
             fetchAdmins();
             resetEditingAdminForm();
             setShowUpdateModal(false);
@@ -178,7 +178,7 @@ const ManageAdmins = () => {
 
     const deleteAdmin = async (id) => {
         try {
-            await axios.delete(`http://10.10.101.169:5000/api/admins/${id}`);
+            await axios.delete(`http://10.10.101.193:5000/api/admins/${id}`);
             fetchAdmins();
         } catch (error) {
             console.error(error);
@@ -194,7 +194,7 @@ const ManageAdmins = () => {
     const confirmDeleteAdmin = async () => {
         if (adminToDelete) {
             try {
-                await axios.delete(`http://10.10.101.169:5000/api/admins/${adminToDelete.id}`);
+                await axios.delete(`http://10.10.101.193:5000/api/admins/${adminToDelete.id}`);
                 fetchAdmins();
                 setShowDeleteModal(false);
             } catch (error) {
@@ -216,7 +216,7 @@ const ManageAdmins = () => {
             division: admin.division,
             department: admin.department,  // Tambahkan department di sini
             image: admin.images,
-            imagePreview: `http://10.10.101.169:5000${admin.images}`,
+            imagePreview: `http://10.10.101.193:5000${admin.images}`,
         });
         setShowUpdateModal(true);
         setCurrentModal('update');
@@ -499,7 +499,7 @@ const ManageAdmins = () => {
                                     <button type="button" className="btn-close" onClick={() => setShowDetailModal(false)}></button>
                                 </div>
                                 <div className="modal-body d-flex">
-                                    <img src={`http://10.10.101.169:5000${selectedAdmin.images}`} alt={selectedAdmin.name} style={{ width: '150px', height: '150px', objectFit: 'cover', marginRight: '20px' }} />
+                                    <img src={`http://10.10.101.193:5000${selectedAdmin.images}`} alt={selectedAdmin.name} style={{ width: '150px', height: '150px', objectFit: 'cover', marginRight: '20px' }} />
                                     <div>
                                         <p><strong>Name:</strong> {selectedAdmin.name}</p>
                                         <p><strong>Email:</strong> {selectedAdmin.email}</p>
@@ -530,7 +530,7 @@ const ManageAdmins = () => {
                             <tr key={admin.id} className="align-middle">
                                 <td style={{ width: '100px' }}>
                                     <img
-                                        src={`http://10.10.101.169:5000${admin.images}`}
+                                        src={`http://10.10.101.193:5000${admin.images}`}
                                         alt={admin.name}
                                         width="70"
                                         className="me-3"

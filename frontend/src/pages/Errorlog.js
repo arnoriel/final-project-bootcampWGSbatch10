@@ -9,7 +9,7 @@ const Errorlog = () => {
         // Fetch error logs from backend
         const fetchErrorLogs = async () => {
             try {
-                const response = await fetch('http://10.10.101.169:5000/api/error-logs');
+                const response = await fetch('http://10.10.101.193:5000/api/error-logs');
                 const data = await response.json();
                 setErrorLogs(data);
             } catch (error) {

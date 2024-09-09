@@ -1,58 +1,66 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Sidebar from './layouts/Sidebar';
 import './layouts/MainContent.css';
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 
 const Attendance = () => {
-    const [attendanceData, setAttendanceData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const [attendanceData, setAttendanceData] = useState([]);
+  const [error, setError] = useState('');
 
-    useEffect(() => {
-        const fetchAttendance = async () => {
-            try {
-                const response = await axios.get('http://10.10.101.169:5000/api/attendance');
-                setAttendanceData(response.data);
-                setLoading(false);
-            } catch (error) {
-                console.error('Failed to fetch attendance data:', error);
-                setError('Failed to fetch attendance data');
-                setLoading(false);
-            }
-        };
+  useEffect(() => {
+    fetchAttendanceData();
+  }, []);
 
-        fetchAttendance();
-    }, []);
+  const fetchAttendanceData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://10.10.101.193:5000/api/attendance', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(response.data); // Logging data for debugging
+      setAttendanceData(response.data);
+    } catch (err) {
+      setError('Failed to fetch attendance data');
+    }
+  };
+  
+  const renderAttendance = () => {
+    if (attendanceData.length === 0) {
+      return <p>No attendance records found.</p>;
+    }
 
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>{error}</p>;
+    return attendanceData.map((record) => (
+      <tr key={record.user_id}>
+        <td>{record.user_id}</td>
+        <td>{record.name}</td> {/* Use `record.name` to display user name */}
+        <td>{new Date(Date.parse(record.login_at)).toLocaleString()}</td>
+        <td>{record.logout_at ? new Date(record.logout_at).toLocaleString() : 'Still logged in'}</td> {/* Display logout time or "Still logged in" */}
+      </tr>
+    ));
+  };
 
-    return (
-        <div>
-            <Sidebar />
-            <div className='main-content'>
-            <h1>Attendance</h1>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Time In</th>
-                        <th>Time Out</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {attendanceData.map((entry) => (
-                        <tr key={entry.user_id}>
-                            <td>{entry.name}</td>
-                            <td>{entry.time_in ? new Date(entry.time_in).toLocaleString() : '-'}</td>
-                            <td>{entry.time_out ? new Date(entry.time_out).toLocaleString() : '-'}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-        </div>
-    );
+  return (
+    <div>
+        <Sidebar />
+        <div className='main-content'>
+      <h2>Attendance Records</h2>
+      {error && <p className="error-message">{error}</p>}
+      <table className="table">
+        <thead>
+          <tr>
+            <th>User ID</th>
+            <th>User Name</th>
+            <th>Login Time</th>
+            <th>Logout Time</th>
+          </tr>
+        </thead>
+        <tbody>{renderAttendance()}</tbody>
+      </table>
+    </div>
+    </div>
+  );
 };
 
 export default Attendance;
