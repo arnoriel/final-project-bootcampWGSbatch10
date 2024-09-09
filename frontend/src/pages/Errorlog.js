@@ -1,53 +1,67 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Sidebar from './layouts/Sidebar';
 import './layouts/MainContent.css';
 
 const Errorlog = () => {
-    const [errorLogs, setErrorLogs] = useState([]);
+  const [errorLogs, setErrorLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-    useEffect(() => {
-        // Fetch error logs from backend
-        const fetchErrorLogs = async () => {
-            try {
-                const response = await fetch('http://10.10.101.193:5000/api/error-logs');
-                const data = await response.json();
-                setErrorLogs(data);
-            } catch (error) {
-                console.error('Error fetching error logs:', error);
-            }
-        };
+  useEffect(() => {
+    fetchErrorLogs();
+  }, []);
 
-        fetchErrorLogs();
-    }, []);
+  const fetchErrorLogs = async () => {
+    try {
+      const response = await axios.get('http://10.10.101.193:5000/api/error-logs');
+      setErrorLogs(response.data);
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to fetch error logs');
+      setLoading(false);
+    }
+  };
 
-    return (
-        <div>
-            <Sidebar />
-            <div className='main-content'>
-            <h1>Error Logs</h1>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Error Message</th>
-                        <th>Endpoint</th>
-                        <th>Stack Trace</th>
-                        <th>Created At</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {errorLogs.map((log, index) => (
-                        <tr key={index}>
-                            <td>{log.error_message}</td>
-                            <td>{log.endpoint}</td>
-                            <td>{log.stack_trace}</td>
-                            <td>{new Date(log.created_at).toLocaleString()}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-        </div>
-    );
+  const renderErrorLogs = () => {
+    if (errorLogs.length === 0) {
+      return <p>No error logs found.</p>;
+    }
+
+    return errorLogs.map((log) => (
+      <tr key={log.id}>
+        <td>{log.created_at}</td>
+        <td>{log.error_message}</td>
+        <td>{log.endpoint}</td>
+        <td>{log.stack_trace}</td>
+      </tr>
+    ));
+  };
+
+  return (
+    <div>
+      <Sidebar />
+      <div className="main-content">
+        <h2>Error Logs</h2>
+        {error && <p className="error-message">{error}</p>}
+        {loading ? (
+          <p>Loading error logs...</p>
+        ) : (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Error Message</th>
+                <th>Endpoint</th>
+                <th>Stack Trace</th>
+              </tr>
+            </thead>
+            <tbody>{renderErrorLogs()}</tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default Errorlog;
