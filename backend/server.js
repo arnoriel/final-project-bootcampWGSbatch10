@@ -10,6 +10,7 @@ const app = express();
 const port = 5000;
 const nodemailer = require('nodemailer');
 const dotenv = require('dotenv').config();
+const cron = require('node-cron');
 
 // PostgreSQL connection
 const pool = new Pool({
@@ -87,6 +88,57 @@ const authenticate = async (req, res, next) => {
         res.status(403).json({ message: 'Invalid token' });
     }
 };
+
+// Fungsi untuk memindahkan data attendance berdasarkan periode waktu
+const updateAttendancePeriod = async () => {
+    try {
+        // Kosongkan kolom period dengan 'yesterday' untuk sementara
+        await pool.query(`
+            UPDATE attendance 
+            SET period = NULL 
+            WHERE period = 'yesterday'
+        `);
+
+        // Pindahkan data dari hari ini ke 'yesterday' hanya jika sudah lewat dari pukul 00.00 (hari berikutnya)
+        await pool.query(`
+            UPDATE attendance 
+            SET period = 'yesterday'
+            WHERE login_at::date = current_date - interval '1 day'
+        `);
+
+        // Pindahkan data dari minggu lalu ke 'last week'
+        await pool.query(`
+            UPDATE attendance 
+            SET period = 'last_week'
+            WHERE login_at::date < current_date - interval '1 day'
+            AND login_at::date >= current_date - interval '7 days'
+        `);
+
+        // Pindahkan data dari bulan lalu ke 'last month'
+        await pool.query(`
+            UPDATE attendance 
+            SET period = 'last_month'
+            WHERE login_at::date < current_date - interval '7 days'
+            AND login_at::date >= current_date - interval '1 month'
+        `);
+
+        // Pindahkan data dari tahun lalu ke 'last year'
+        await pool.query(`
+            UPDATE attendance 
+            SET period = 'last_year'
+            WHERE login_at::date < current_date - interval '1 month'
+            AND login_at::date >= current_date - interval '1 year'
+        `);
+    } catch (error) {
+        console.error('Error updating attendance period', error);
+    }
+};
+
+// Cron job untuk menjalankan fungsi setiap hari pukul 00.00
+cron.schedule('0 0 * * *', () => {
+    updateAttendancePeriod();
+    console.log('Attendance data updated at midnight');
+});
 
 // Error logging middleware
 app.use(async (err, req, res, next) => {
@@ -209,8 +261,34 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Endpoint untuk mendapatkan data attendance
+//Attendance
 app.get('/api/attendance', async (req, res) => {
+    const { period } = req.query;  // Ambil parameter periode dari query string
+    let dateCondition = '';
+
+    // Tentukan kondisi tanggal berdasarkan periode
+    switch (period) {
+        case 'yesterday':
+            dateCondition = `a.login_at::date = current_date - interval '1 day'`;
+            break;
+        case 'last_week':
+            // Ambil semua data dari seminggu terakhir
+            dateCondition = `a.login_at >= current_date - interval '7 days'`;
+            break;
+        case 'last_month':
+            // Ambil semua data dari sebulan terakhir
+            dateCondition = `a.login_at >= current_date - interval '1 month'`;
+            break;
+        case 'last_year':
+            // Ambil semua data dari setahun terakhir
+            dateCondition = `a.login_at >= current_date - interval '1 year'`;
+            break;
+        case 'today':
+        default:
+            dateCondition = `a.login_at::date = current_date`;
+            break;
+    }
+
     try {
         const attendanceData = await pool.query(`
             SELECT 
@@ -220,6 +298,7 @@ app.get('/api/attendance', async (req, res) => {
                 to_char(a.logout_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as logout_at 
             FROM users u 
             INNER JOIN attendance a ON u.id = a.user_id
+            WHERE ${dateCondition}
             ORDER BY a.login_at DESC
         `);
 
@@ -229,7 +308,6 @@ app.get('/api/attendance', async (req, res) => {
         res.status(500).json({ message: 'Failed to fetch attendance data' });
     }
 });
-
 
 // Logout user
 app.post('/api/logout', async (req, res) => {

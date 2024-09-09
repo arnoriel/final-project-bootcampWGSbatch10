@@ -5,6 +5,35 @@
   margin-left: 250px; /* Adjust based on Sidebar width */
 }
 
+.period-buttons {
+  margin-bottom: 20px;
+}
+
+.period-buttons button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  margin-right: 10px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.period-buttons button.active {
+  background-color: #0056b3; /* Tombol yang aktif */
+}
+
+.period-buttons button:hover {
+  background-color: #0056b3;
+}
+
+.error-message {
+  color: red;
+  margin-bottom: 20px;
+}
+
 input[type="text"] {
   margin-bottom: 20px;
   padding: 10px;
