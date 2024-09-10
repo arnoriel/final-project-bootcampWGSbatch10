@@ -162,7 +162,7 @@ app.use(async (err, req, res, next) => {
 app.post('/api/register', upload.single('image'), async (req, res) => {
     const { name, email, phone, division, department, role } = req.body;  // Tambahkan department di sini
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
-    const link = 'http://10.10.101.169:3000'
+    const link = 'http://10.10.101.193:3000'
     const userRole = role || 'employee';
     const password = generateReadablePassword();
     const text = `
@@ -261,7 +261,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-//Attendance
+//Endpoint untuk mendapatkan Attendance
 app.get('/api/attendance', async (req, res) => {
     const { period } = req.query;  // Ambil parameter periode dari query string
     let dateCondition = '';
@@ -291,9 +291,8 @@ app.get('/api/attendance', async (req, res) => {
             SELECT 
                 u.id as user_id, 
                 u.name, 
-                to_char(a.login_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as login_at, 
-                to_char(a.logout_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as logout_at,
-                -- Hitung total waktu kerja
+                to_char(a.login_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as login_at, 
+                to_char(a.logout_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as logout_at,
                 CASE 
                     WHEN a.logout_at IS NOT NULL THEN 
                         to_char(a.logout_at - a.login_at, 'HH24:MI:SS')
