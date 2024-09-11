@@ -317,30 +317,32 @@ app.post('/api/logout', async (req, res) => {
     const token = req.body.token;
 
     try {
-        // Update logout_at time for the session
-        await pool.query(
-            'UPDATE active_sessions SET logout_at = NOW() WHERE session_token = $1',
-            [token]
-        );
-
         // Get the user_id associated with this session
         const session = await pool.query('SELECT user_id FROM active_sessions WHERE session_token = $1', [token]);
         const userId = session.rows[0]?.user_id;
 
-        // Update the logout time in the attendance table
-        if (userId) {
-            await pool.query(
-                'UPDATE attendance SET logout_at = NOW() WHERE user_id = $1 AND logout_at IS NULL',
-                [userId]
-            );
+        if (!userId) {
+            return res.status(404).json({ message: 'Session not found' });
         }
+
+        // Update the logout time in the attendance table
+        await pool.query(
+            'UPDATE attendance SET logout_at = NOW() WHERE user_id = $1 AND logout_at IS NULL',
+            [userId]
+        );
+
+        // Update logout_at time for the session in active_sessions
+        await pool.query(
+            'UPDATE active_sessions SET logout_at = NOW() WHERE session_token = $1',
+            [token]
+        );
 
         // Delete the session after updating the logout time
         await pool.query('DELETE FROM active_sessions WHERE session_token = $1', [token]);
 
         res.json({ message: 'Logout successful' });
     } catch (error) {
-        console.error(error);
+        console.error('Logout error:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });

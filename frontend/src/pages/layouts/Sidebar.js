@@ -14,23 +14,25 @@ function Sidebar() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch('http://10.10.101.193:5000/api/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token }),
-      });
+        const response = await fetch('http://10.10.101.193:5000/api/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ token }),
+        });
 
-      if (response.ok) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('role');
-        navigate('/login');
-      }
+        if (response.ok) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            navigate('/login');
+        } else {
+            console.error('Failed to logout');
+        }
     } catch (error) {
-      console.error('Logout error:', error);
+        console.error('Logout error:', error);
     }
-  };
+};
 
   const isActive = (path) => location.pathname === path;
 
