@@ -1,0 +1,5 @@
+Day 17 Target
+
+- Fixed bug logout time at attendance
+- Added search name and pagination function in Attendance
+- Fix error catch message

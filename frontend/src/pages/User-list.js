@@ -99,7 +99,7 @@ const UserList = () => {
                                             display: 'inline-block',
                                             width: '10px',
                                             height: '10px',
-                                            backgroundColor: user.status === 'online' ? 'green' : 'gray',
+                                            backgroundColor: user.status === 'online' ? 'lime' : 'gray',
                                             borderRadius: '50%',
                                             marginRight: '5px'
                                         }}></span>

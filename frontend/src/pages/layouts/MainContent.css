@@ -7,6 +7,8 @@
 
 .period-buttons {
   margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
 }
 
 .period-buttons button {
@@ -14,7 +16,6 @@
   color: #fff;
   border: none;
   padding: 10px 20px;
-  margin-right: 10px;
   border-radius: 5px;
   font-size: 16px;
   cursor: pointer;
@@ -22,7 +23,7 @@
 }
 
 .period-buttons button.active {
-  background-color: #0056b3; /* Tombol yang aktif */
+  background-color: #0056b3;
 }
 
 .period-buttons button:hover {
@@ -32,6 +33,7 @@
 .error-message {
   color: red;
   margin-bottom: 20px;
+  font-weight: bold;
 }
 
 input[type="text"] {
@@ -75,30 +77,6 @@ table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.table th, .table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-.table tbody tr:hover {
-  background-color: #f1f1f1;
-}
-
-.error-message {
-  color: red;
-  margin-bottom: 20px;
-}
-
 .modal {
   display: none; /* Secara default disembunyikan */
   position: fixed;
@@ -121,26 +99,51 @@ table tbody tr:last-child td {
   border-radius: 5px;
   width: 500px;
   text-align: left;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.3s ease-out;
 }
 
-.error-logs-table {
-  width: 100%;
-  border-collapse: collapse;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-top: 20px;
 }
 
-.error-logs-table th,
-.error-logs-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
+.pagination button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  margin: 0 5px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.error-logs-table th {
-  background-color: #f2f2f2;
-  font-weight: bold;
+.pagination button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
-.error-logs-table tr:nth-child(even) {
-  background-color: #f9f9f9;
+.pagination button:hover:not(:disabled) {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+.pagination span {
+  margin: 0 10px;
+  font-size: 14px;
 }

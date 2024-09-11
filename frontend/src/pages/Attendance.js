@@ -108,8 +108,8 @@ const Attendance = () => {
                         placeholder="Search by name"
                         value={search}
                         onChange={handleSearch}
+                        className="search-input"
                     />
-
                 </div>
                 <div className="period-buttons">
                     <button className={period === 'today' ? 'active' : ''} onClick={() => setPeriod('today')}>Today</button>
@@ -118,11 +118,13 @@ const Attendance = () => {
                     <button className={period === 'last_month' ? 'active' : ''} onClick={() => setPeriod('last_month')}>Last Month</button>
                     <button className={period === 'last_year' ? 'active' : ''} onClick={() => setPeriod('last_year')}>Last Year</button>
                 </div>
-                <select value={limit} onChange={handleLimitChange}>
+                <p>Rows per page:
+                <select className="rows-per-page" value={limit} onChange={handleLimitChange}>
                     <option value={10}>10 rows</option>
                     <option value={20}>20 rows</option>
                     <option value={50}>50 rows</option>
                 </select>
+                </p>
                 {error && <p className="error-message">{error}</p>}
 
                 <table className="table">
