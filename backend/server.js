@@ -89,6 +89,17 @@ const authenticate = async (req, res, next) => {
     }
 };
 
+const logErrorToDatabase = async (errorMessage, stackTrace) => {
+    try {
+        await pool.query(
+            'INSERT INTO error_logs (message, stack_trace, created_at) VALUES ($1, $2, CURRENT_TIMESTAMP)',
+            [errorMessage, stackTrace]
+        );
+    } catch (error) {
+        console.error('Failed to log error to the database:', error);
+    }
+};
+
 // Fungsi untuk memindahkan data attendance berdasarkan periode waktu
 const updateAttendancePeriod = async () => {
     try {
@@ -214,6 +225,7 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
         console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -257,6 +269,7 @@ app.post('/api/login', async (req, res) => {
         res.json({ message: 'Login successful', token, role: user.rows[0].role });
     } catch (error) {
         console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -330,6 +343,7 @@ app.get('/api/attendance', async (req, res) => {
         });
     } catch (error) {
         console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
         res.status(500).json({ message: 'Failed to fetch attendance data' });
     }
 });
@@ -381,6 +395,7 @@ app.use('/api/protected-route', async (req, res, next) => {
         next();
     } catch (error) {
         console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -398,6 +413,7 @@ app.get('/api/user', authenticate, async (req, res) => {
         res.json({ name: user.rows[0].name });
     } catch (error) {
         console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -409,6 +425,7 @@ app.get('/api/users', async (req, res) => {
         res.status(200).json(result.rows);
     } catch (error) {
         console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -429,6 +446,7 @@ app.get('/api/users/status', async (req, res) => {
         res.status(200).json(users.rows);
     } catch (error) {
         console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -453,6 +471,7 @@ app.get('/api/admins', async (req, res) => {
         });
     } catch (error) {
         console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -493,6 +512,7 @@ app.put('/api/admins/:id', upload.single('image'), async (req, res) => {
         res.status(200).json({ message: 'Admin updated successfully' });
     } catch (error) {
         console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -522,6 +542,7 @@ app.delete('/api/admins/:id', async (req, res) => {
         res.status(200).json({ message: 'Admin deleted successfully' });
     } catch (error) {
         console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -548,6 +569,7 @@ app.get('/api/employees', async (req, res) => {
         });
     } catch (error) {
         console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -588,6 +610,7 @@ app.put('/api/employees/:id', upload.single('image'), async (req, res) => {
         res.status(200).json({ message: 'Employee updated successfully' });
     } catch (error) {
         console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -617,6 +640,7 @@ app.delete('/api/employees/:id', async (req, res) => {
         res.status(200).json({ message: 'Employee deleted successfully' });
     } catch (error) {
         console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -641,6 +665,7 @@ app.get('/api/search', async (req, res) => {
         res.status(200).json(result.rows);
     } catch (error) {
         console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -697,6 +722,7 @@ app.post('/api/forgot-password', async (req, res) => {
         res.status(200).json({ message: 'Password reset successfully. Please check your email for the new password.' });
     } catch (error) {
         console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
