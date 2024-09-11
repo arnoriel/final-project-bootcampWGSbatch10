@@ -263,8 +263,9 @@ app.post('/api/login', async (req, res) => {
 
 //Endpoint untuk mendapatkan Attendance
 app.get('/api/attendance', async (req, res) => {
-    const { period } = req.query;  // Ambil parameter periode dari query string
+    const { period, search = '', page = 1, limit = 10 } = req.query; // Default page 1 and limit 10
     let dateCondition = '';
+    const offset = (page - 1) * limit;  // Calculate offset for pagination
 
     // Tentukan kondisi tanggal berdasarkan periode
     switch (period) {
@@ -287,7 +288,8 @@ app.get('/api/attendance', async (req, res) => {
     }
 
     try {
-        const attendanceData = await pool.query(`
+        // Buat query SQL
+        const attendanceQuery = `
             SELECT 
                 u.id as user_id, 
                 u.name, 
@@ -302,10 +304,30 @@ app.get('/api/attendance', async (req, res) => {
             FROM users u 
             INNER JOIN attendance a ON u.id = a.user_id
             WHERE ${dateCondition}
+            AND u.name ILIKE '%' || $1 || '%'  -- Parameter pencarian nama
             ORDER BY a.login_at DESC
-        `);
+            LIMIT $2 OFFSET $3;  -- Parameter paginasi
+        `;
 
-        res.status(200).json(attendanceData.rows);
+        // Eksekusi query untuk mendapatkan data attendance
+        const attendanceData = await pool.query(attendanceQuery, [search, limit, offset]);
+
+        // Query untuk mendapatkan total record tanpa limit dan offset (untuk paginasi)
+        const totalQuery = `
+            SELECT COUNT(*) FROM users u 
+            INNER JOIN attendance a ON u.id = a.user_id
+            WHERE ${dateCondition}
+            AND u.name ILIKE '%' || $1 || '%';
+        `;
+        const totalRecords = await pool.query(totalQuery, [search]);
+
+        // Kirim respons dengan data attendance, total records, page, dan limit
+        res.status(200).json({ 
+            attendance: attendanceData.rows,
+            total: totalRecords.rows[0].count,
+            page: parseInt(page),
+            limit: parseInt(limit)
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to fetch attendance data' });
@@ -380,6 +402,7 @@ app.get('/api/user', authenticate, async (req, res) => {
     }
 });
 
+//Get Users
 app.get('/api/users', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM users ORDER BY updated_at DESC');
@@ -434,7 +457,7 @@ app.get('/api/admins', async (req, res) => {
     }
 });
 
-// PUT Admin
+// Update Admin
 app.put('/api/admins/:id', upload.single('image'), async (req, res) => {
     const { id } = req.params;
     const { name, email, phone, division, department } = req.body;
@@ -474,6 +497,7 @@ app.put('/api/admins/:id', upload.single('image'), async (req, res) => {
     }
 });
 
+//Delete admin
 app.delete('/api/admins/:id', async (req, res) => {
     const { id } = req.params;
 
