@@ -16,6 +16,7 @@ import UserList from './pages/User-list';
 import Attendance from './pages/Attendance';
 import ErrorLog from './pages/Errorlog';
 import Leave from './pages/Leave'; // Import the Leave component
+import LeaveApproval from './pages/LeaveApproval';
 import ProtectedRoute from './ProtectedRoute';
 
 function App() {
@@ -68,7 +69,15 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/leave" element={<Leave />} /> {/* Add the Leave route */}
+        <Route path="/leave" element={<Leave />} />
+        <Route
+          path="/leave-approval"
+          element={
+            <ProtectedRoute role={["superadmin", "admin"]}>
+              <LeaveApproval />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );

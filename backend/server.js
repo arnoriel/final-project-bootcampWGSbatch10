@@ -231,18 +231,65 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
     }
 });
 
-// POST Leave Request
+// POST Leave Request (New Leave Request Submission)
 app.post('/api/leave-request', async (req, res) => {
-    const { name, email, leave_type, reason, superior } = req.body;
+    const { name, email, leave_type, reason, superior, status } = req.body;
 
     try {
-        const newLeaveRequest = await pool.query(
-            `INSERT INTO leave_requests (name, email, leave_type, reason, superior, status) 
-            VALUES ($1, $2, $3, $4, $5, 'Pending') RETURNING *`,
-            [name, email, leave_type, reason, superior]
+        const result = await pool.query(
+            "INSERT INTO leave_requests (name, email, leave_type, reason, superior, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            [name, email, leave_type, reason, superior, status]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+app.get('/api/leave-requests', async (req, res) => {
+    const { role } = req.query; // Get the user role from the query parameter
+
+    if (role !== 'admin' && role !== 'superadmin') {
+        return res.status(403).json({ message: 'Unauthorized access' });
+    }
+
+    try {
+        const leaveRequests = await pool.query("SELECT * FROM leave_requests WHERE status = 'Pending'");
+        res.status(200).json(leaveRequests.rows);
+    } catch (error) {
+        console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// UPDATE Leave Request Status
+app.put('/api/leave-requests/:id', async (req, res) => {
+    const { role } = req.query; // Get the user role from the query parameter
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (role !== 'admin' && role !== 'superadmin') {
+        return res.status(403).json({ message: 'Unauthorized access' });
+    }
+
+    if (!['Approved', 'Declined'].includes(status)) {
+        return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    try {
+        const result = await pool.query(
+            "UPDATE leave_requests SET status = $1 WHERE id = $2 RETURNING *",
+            [status, id]
         );
 
-        res.status(201).json(newLeaveRequest.rows[0]);
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'Leave request not found' });
+        }
+
+        res.status(200).json(result.rows[0]);
     } catch (error) {
         console.error(error);
         await logErrorToDatabase(error.message, error.stack);
