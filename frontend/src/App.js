@@ -17,6 +17,7 @@ import Attendance from './pages/Attendance';
 import ErrorLog from './pages/Errorlog';
 import Leave from './pages/Leave'; // Import the Leave component
 import LeaveApproval from './pages/LeaveApproval';
+import LeaveHistory from './pages/LeaveHistory';
 import ProtectedRoute from './ProtectedRoute';
 
 function App() {
@@ -75,6 +76,14 @@ function App() {
           element={
             <ProtectedRoute role={["superadmin", "admin"]}>
               <LeaveApproval />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leave-history"
+          element={
+            <ProtectedRoute role={["superadmin", "admin", "employee"]}>
+              <LeaveHistory />
             </ProtectedRoute>
           }
         />

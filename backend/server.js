@@ -265,6 +265,18 @@ app.get('/api/leave-requests', async (req, res) => {
     }
 });
 
+//Leave History
+app.get('/api/leave-history', async (req, res) => {
+    try {
+      const result = await pool.query('SELECT * FROM leave_requests');
+      res.status(200).json(result.rows);
+    } catch (error) {
+      console.error('Error fetching leave history:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+  
+
 // UPDATE Leave Request Status
 app.put('/api/leave-requests/:id', async (req, res) => {
     const { role } = req.query; // Get the user role from the query parameter

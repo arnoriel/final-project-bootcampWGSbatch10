@@ -87,6 +87,13 @@ function Sidebar() {
           </li>
         )}
         {(role === 'superadmin' || role === 'admin' || role === 'employee') && (
+            <li>
+              <Link to="/leave-history" className={isActive('/leave-history') ? 'active' : ''}>
+                Leave History
+              </Link>
+            </li>
+        )}
+        {(role === 'superadmin' || role === 'admin' || role === 'employee') && (
           <>
             <li>
               <Link to="/employee-list" className={isActive('/employee-list') ? 'active' : ''}>
