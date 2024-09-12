@@ -89,6 +89,7 @@ const authenticate = async (req, res, next) => {
     }
 };
 
+//Middleware error log
 const logErrorToDatabase = async (errorMessage, stackTrace) => {
     try {
         await pool.query(
@@ -223,6 +224,43 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
         console.log(`User created with email: ${email}, password: ${password}`);
 
         res.status(201).json({ message: 'User registered successfully' });
+    } catch (error) {
+        console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// POST Leave Request
+app.post('/api/leave-request', async (req, res) => {
+    const { name, email, leave_type, reason, superior } = req.body;
+
+    try {
+        const newLeaveRequest = await pool.query(
+            `INSERT INTO leave_requests (name, email, leave_type, reason, superior, status) 
+            VALUES ($1, $2, $3, $4, $5, 'Pending') RETURNING *`,
+            [name, email, leave_type, reason, superior]
+        );
+
+        res.status(201).json(newLeaveRequest.rows[0]);
+    } catch (error) {
+        console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// GET Admin and Superadmin Users for Leave Request Superior Selection
+app.get('/api/superiors', async (req, res) => {
+    try {
+        // Fetch users with role 'admin' or 'superadmin'
+        const superiors = await pool.query("SELECT id, name FROM users WHERE role IN ('admin', 'superadmin')");
+        
+        if (superiors.rows.length === 0) {
+            return res.status(404).json({ message: 'No superiors found' });
+        }
+
+        res.status(200).json(superiors.rows);
     } catch (error) {
         console.error(error);
         await logErrorToDatabase(error.message, error.stack);
@@ -383,6 +421,64 @@ app.post('/api/logout', async (req, res) => {
     }
 });
 
+//Forgot Password
+app.post('/api/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        // Cek apakah email terdaftar
+        const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (user.rows.length === 0) {
+            return res.status(404).json({ message: 'Email not found' });
+        }
+
+        // Generate password baru
+        const newPassword = generateReadablePassword();
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update password di database
+        await pool.query(
+            'UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE email = $2',
+            [hashedPassword, email]
+        );
+
+        // Kirim email reset password
+        const resetMailOptions = {
+            from: 'no_reply@gmail.com',
+            to: email,
+            subject: 'Password Reset for MyOffice',
+            text: `
+                Dear User,
+
+                Your password has been reset. Please use the following new password to log in:
+
+                New Password: ${newPassword}
+
+                Make sure to change this password immediately after logging in.
+
+                Regards,
+                MyOffice Team
+            `
+        };
+
+        transport.sendMail(resetMailOptions, (error, info) => {
+            if (error) {
+                console.log('Error sending email:', error.message);
+            } else {
+                console.log('Password reset email sent:', info.response);
+            }
+        });
+
+        console.log(`Password reset for ${email}: ${newPassword}`);
+
+        res.status(200).json({ message: 'Password reset successfully. Please check your email for the new password.' });
+    } catch (error) {
+        console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 // Middleware to check if session is still active
 app.use('/api/protected-route', async (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
@@ -450,6 +546,8 @@ app.get('/api/users/status', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+// CRUD untuk Admin
 
 // GET Admins
 app.get('/api/admins', async (req, res) => {
@@ -670,63 +768,7 @@ app.get('/api/search', async (req, res) => {
     }
 });
 
-app.post('/api/forgot-password', async (req, res) => {
-    const { email } = req.body;
-
-    try {
-        // Cek apakah email terdaftar
-        const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (user.rows.length === 0) {
-            return res.status(404).json({ message: 'Email not found' });
-        }
-
-        // Generate password baru
-        const newPassword = generateReadablePassword();
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-        // Update password di database
-        await pool.query(
-            'UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE email = $2',
-            [hashedPassword, email]
-        );
-
-        // Kirim email reset password
-        const resetMailOptions = {
-            from: 'no_reply@gmail.com',
-            to: email,
-            subject: 'Password Reset for MyOffice',
-            text: `
-                Dear User,
-
-                Your password has been reset. Please use the following new password to log in:
-
-                New Password: ${newPassword}
-
-                Make sure to change this password immediately after logging in.
-
-                Regards,
-                MyOffice Team
-            `
-        };
-
-        transport.sendMail(resetMailOptions, (error, info) => {
-            if (error) {
-                console.log('Error sending email:', error.message);
-            } else {
-                console.log('Password reset email sent:', info.response);
-            }
-        });
-
-        console.log(`Password reset for ${email}: ${newPassword}`);
-
-        res.status(200).json({ message: 'Password reset successfully. Please check your email for the new password.' });
-    } catch (error) {
-        console.error(error);
-        await logErrorToDatabase(error.message, error.stack);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-});
-
+// Error Logs
 app.get('/api/error-logs', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM error_logs ORDER BY created_at DESC');
@@ -737,6 +779,7 @@ app.get('/api/error-logs', async (req, res) => {
     }
 });
 
+//Port
 app.listen(port, () => {
-    console.log(`Server running on http://10.10.101.169:${port}`);
+    console.log(`Server running on http://10.10.101.193:${port}`);
 });

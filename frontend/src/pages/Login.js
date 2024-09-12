@@ -12,7 +12,7 @@ function Login() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
-    
+
     if (token && role) {
       if (role === 'superadmin') {
         navigate('/superadmin');
@@ -57,6 +57,11 @@ function Login() {
     }
   };
 
+  // Function to navigate to the Leave page
+  const handleLeaveClick = () => {
+    navigate('/leave');
+  };
+
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -92,6 +97,11 @@ function Login() {
             <a href="/forgot">Forgot Password?</a>
           </p>
         </form>
+        
+        {/* New button for Leave page */}
+        <button className="leave-button" onClick={handleLeaveClick}>
+          Apply for Leave
+        </button>
       </div>
     </div>
   );

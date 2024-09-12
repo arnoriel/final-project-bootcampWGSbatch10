@@ -14,8 +14,9 @@ import ManageAdmins from './pages/Manage-admins';
 import ManageEmployees from './pages/Manage-employees';
 import UserList from './pages/User-list';
 import Attendance from './pages/Attendance';
-import ErrorLog from './pages/Errorlog'; // Importing the ErrorLog component
-import ProtectedRoute from './ProtectedRoute'; // Assuming ProtectedRoute is in the same directory level as pages
+import ErrorLog from './pages/Errorlog';
+import Leave from './pages/Leave'; // Import the Leave component
+import ProtectedRoute from './ProtectedRoute';
 
 function App() {
   return (
@@ -67,6 +68,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/leave" element={<Leave />} /> {/* Add the Leave route */}
       </Routes>
     </Router>
   );
