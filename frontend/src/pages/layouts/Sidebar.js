@@ -96,13 +96,13 @@ function Sidebar() {
         {(role === 'superadmin' || role === 'admin' || role === 'employee') && (
           <>
             <li>
-              <Link to="/employee-list" className={isActive('/employee-list') ? 'active' : ''}>
-                Employee List
+              <Link to="/attendance" className={isActive('/attendance') ? 'active' : ''}>
+                Attendance
               </Link>
             </li>
             <li>
-              <Link to="/attendance" className={isActive('/attendance') ? 'active' : ''}>
-                Attendance
+              <Link to="/employee-list" className={isActive('/employee-list') ? 'active' : ''}>
+                Employee List
               </Link>
             </li>
           </>

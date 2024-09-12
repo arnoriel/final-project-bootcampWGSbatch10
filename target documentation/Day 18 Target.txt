@@ -1,0 +1,3 @@
+Day 18 Target:
+
+- Making Leave Permission Function full
