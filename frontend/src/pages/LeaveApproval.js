@@ -15,7 +15,7 @@ const LeaveApproval = () => {
 
     const fetchLeaveRequests = async () => {
         try {
-            const response = await axios.get(`http://10.10.101.193:5000/api/leave-requests?role=${role}`);
+            const response = await axios.get(`http://10.10.101.78:5000/api/leave-requests?role=${role}`);
             setLeaveRequests(response.data);
         } catch (error) {
             console.error('Error fetching leave requests:', error);
@@ -25,7 +25,7 @@ const LeaveApproval = () => {
 
     const handleStatusChange = async (id, newStatus) => {
         try {
-            const response = await axios.put(`http://10.10.101.193:5000/api/leave-requests/${id}?role=${role}`, { status: newStatus });
+            const response = await axios.put(`http://10.10.101.78:5000/api/leave-requests/${id}?role=${role}`, { status: newStatus });
             alert(`Leave request ${newStatus.toLowerCase()} successfully!`);
             fetchLeaveRequests(); // Refresh the leave requests
         } catch (error) {

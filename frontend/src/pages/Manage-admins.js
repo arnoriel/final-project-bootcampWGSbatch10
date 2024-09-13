@@ -27,7 +27,9 @@ const ManageAdmins = () => {
     });
     const [errors, setErrors] = useState({
         email: '',
-        phone: ''
+        phone: '',
+        duplicateEmail: false,
+        duplicatePhone: false,
     });
     const [showAddModal, setShowAddModal] = useState(false);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -55,7 +57,7 @@ const ManageAdmins = () => {
             let response;
 
             if (searchQuery) {
-                response = await axios.get('http://10.10.101.193:5000/api/search', {
+                response = await axios.get('http://10.10.101.78:5000/api/search', {
                     params: {
                         query: searchQuery,
                         role: 'admin' // Menambahkan role admin
@@ -63,7 +65,7 @@ const ManageAdmins = () => {
                 });
                 setAdmins(response.data || []);
             } else {
-                response = await axios.get('http://10.10.101.193:5000/api/admins', {
+                response = await axios.get('http://10.10.101.78:5000/api/admins', {
                     params: {
                         page: currentPage,
                         limit: rowsPerPage
@@ -80,25 +82,46 @@ const ManageAdmins = () => {
         }
     };
 
-    const handleInputChange = (e, setState) => {
+    const checkDuplicate = async (field, value) => {
+        try {
+            const response = await axios.post('http://10.10.101.78:5000/api/check-duplicate', {
+                field,
+                value
+            });
+            return response.data.isDuplicate;
+        } catch (error) {
+            console.error('Error checking duplicate:', error);
+            return false;
+        }
+    };
+
+    const handleInputChange = async (e) => {
         const { name, value } = e.target;
-        setState(prevState => ({ ...prevState, [name]: value }));
+        setNewAdmin(prevState => ({ ...prevState, [name]: value }));
 
         if (name === 'email') {
             if (!value.includes('@')) {
                 setErrors(prevErrors => ({ ...prevErrors, email: 'Email should be user@example.com' }));
             } else {
                 setErrors(prevErrors => ({ ...prevErrors, email: '' }));
+                const isDuplicate = await checkDuplicate('email', value);
+                setErrors(prevErrors => ({ ...prevErrors, duplicateEmail: isDuplicate }));
             }
         }
 
         if (name === 'phone') {
             if (!value.startsWith('0') && !value.startsWith('+62')) {
-                setErrors(prevErrors => ({ ...prevErrors, phone: 'Phone should be started with format 0 or +62' }));
+                setErrors(prevErrors => ({ ...prevErrors, phone: 'Phone should start with 0 or +62' }));
             } else {
                 setErrors(prevErrors => ({ ...prevErrors, phone: '' }));
+                const isDuplicate = await checkDuplicate('phone', value);
+                setErrors(prevErrors => ({ ...prevErrors, duplicatePhone: isDuplicate }));
             }
         }
+    };
+
+    const isFormValid = () => {
+        return !errors.email && !errors.phone && !errors.duplicateEmail && !errors.duplicatePhone && newAdmin.email && newAdmin.phone;
     };
 
     const handleImageChange = (e, setState) => {
@@ -141,7 +164,7 @@ const ManageAdmins = () => {
         formData.append('image', newAdmin.image);
 
         try {
-            await axios.post('http://10.10.101.193:5000/api/register', formData);
+            await axios.post('http://10.10.101.78:5000/api/register', formData);
             fetchAdmins();
             resetNewAdminForm();
             setShowAddModal(false);
@@ -162,7 +185,7 @@ const ManageAdmins = () => {
         formData.append('image', editingAdmin.image);
 
         try {
-            await axios.put(`http://10.10.101.193:5000/api/admins/${editingAdmin.id}`, formData);
+            await axios.put(`http://10.10.101.78:5000/api/admins/${editingAdmin.id}`, formData);
             fetchAdmins();
             resetEditingAdminForm();
             setShowUpdateModal(false);
@@ -178,7 +201,7 @@ const ManageAdmins = () => {
 
     const deleteAdmin = async (id) => {
         try {
-            await axios.delete(`http://10.10.101.193:5000/api/admins/${id}`);
+            await axios.delete(`http://10.10.101.78:5000/api/admins/${id}`);
             fetchAdmins();
         } catch (error) {
             console.error(error);
@@ -194,7 +217,7 @@ const ManageAdmins = () => {
     const confirmDeleteAdmin = async () => {
         if (adminToDelete) {
             try {
-                await axios.delete(`http://10.10.101.193:5000/api/admins/${adminToDelete.id}`);
+                await axios.delete(`http://10.10.101.78:5000/api/admins/${adminToDelete.id}`);
                 fetchAdmins();
                 setShowDeleteModal(false);
             } catch (error) {
@@ -216,7 +239,7 @@ const ManageAdmins = () => {
             division: admin.division,
             department: admin.department,  // Tambahkan department di sini
             image: admin.images,
-            imagePreview: `http://10.10.101.193:5000${admin.images}`,
+            imagePreview: `http://10.10.101.78:5000${admin.images}`,
         });
         setShowUpdateModal(true);
         setCurrentModal('update');
@@ -347,7 +370,7 @@ const ManageAdmins = () => {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => handleCancel('add')}>Cancel</button>
-                                <button type="button" className="btn btn-primary" onClick={addAdmin} disabled={errors.email || errors.phone}>Add Admin</button>
+                                <button type="button" className="btn btn-primary" onClick={addAdmin} disabled={errors.email || errors.phone || !newAdmin.email || !newAdmin.phone}>Add Admin</button>
                             </div>
                         </div>
                     </div>
@@ -499,7 +522,7 @@ const ManageAdmins = () => {
                                     <button type="button" className="btn-close" onClick={() => setShowDetailModal(false)}></button>
                                 </div>
                                 <div className="modal-body d-flex">
-                                    <img src={`http://10.10.101.193:5000${selectedAdmin.images}`} alt={selectedAdmin.name} style={{ width: '150px', height: '150px', objectFit: 'cover', marginRight: '20px' }} />
+                                    <img src={`http://10.10.101.78:5000${selectedAdmin.images}`} alt={selectedAdmin.name} style={{ width: '150px', height: '150px', objectFit: 'cover', marginRight: '20px' }} />
                                     <div>
                                         <p><strong>Name:</strong> {selectedAdmin.name}</p>
                                         <p><strong>Email:</strong> {selectedAdmin.email}</p>
@@ -530,7 +553,7 @@ const ManageAdmins = () => {
                             <tr key={admin.id} className="align-middle">
                                 <td style={{ width: '100px' }}>
                                     <img
-                                        src={`http://10.10.101.193:5000${admin.images}`}
+                                        src={`http://10.10.101.78:5000${admin.images}`}
                                         alt={admin.name}
                                         width="70"
                                         className="me-3"

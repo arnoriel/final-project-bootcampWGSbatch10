@@ -200,9 +200,14 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
     };
 
     try {
-        const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const existingUser = await pool.query('SELECT * FROM users WHERE email = $1 OR phone = $2', [email, phone]);
         if (existingUser.rows.length > 0) {
-            return res.status(400).json({ message: 'Email already exists' });
+            // Cek apakah duplikat karena email atau phone
+            if (existingUser.rows[0].email === email) {
+                return res.status(400).json({ message: 'Email already exists' });
+            } else if (existingUser.rows[0].phone === phone) {
+                return res.status(400).json({ message: 'Phone number already exists' });
+            }
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -231,6 +236,22 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
     }
 });
 
+//Check duplicate users
+app.post('/api/check-duplicate', async (req, res) => {
+    const { email, phone } = req.body;
+    try {
+        const existingUser = await pool.query('SELECT * FROM users WHERE email = $1 OR phone = $2', [email, phone]);
+        if (existingUser.rows.length > 0) {
+            res.json({ exists: true });
+        } else {
+            res.json({ exists: false });
+        }
+    } catch (error) {
+        console.error('Error checking duplicate:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 // POST Leave Request (New Leave Request Submission)
 app.post('/api/leave-request', async (req, res) => {
     const { name, email, leave_type, reason, superior, status } = req.body;
@@ -248,6 +269,7 @@ app.post('/api/leave-request', async (req, res) => {
     }
 });
 
+//Get Leave Request
 app.get('/api/leave-requests', async (req, res) => {
     const { role } = req.query; // Get the user role from the query parameter
 
@@ -839,5 +861,5 @@ app.get('/api/error-logs', async (req, res) => {
 
 //Port
 app.listen(port, () => {
-    console.log(`Server running on http://10.10.101.193:${port}`);
+    console.log(`Server running on http://10.10.101.78:${port}`);
 });

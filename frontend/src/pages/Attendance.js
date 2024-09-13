@@ -50,7 +50,7 @@ const Attendance = () => {
     const fetchAttendanceData = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`http://10.10.101.193:5000/api/attendance`, {
+            const response = await axios.get(`http://10.10.101.78:5000/api/attendance`, {
                 params: { period, search, page, limit },
                 headers: {
                     Authorization: `Bearer ${token}`,

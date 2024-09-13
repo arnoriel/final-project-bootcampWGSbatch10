@@ -14,8 +14,8 @@ const UserList = () => {
             try {
                 // Mengambil data pengguna dan status pengguna secara paralel
                 const [usersResponse, statusResponse] = await Promise.all([
-                    axios.get('http://10.10.101.193:5000/api/users'),
-                    axios.get('http://10.10.101.193:5000/api/users/status')
+                    axios.get('http://10.10.101.78:5000/api/users'),
+                    axios.get('http://10.10.101.78:5000/api/users/status')
                 ]);
 
                 const usersData = usersResponse.data;
@@ -79,7 +79,7 @@ const UserList = () => {
                             <tr key={user.id} className="align-middle">
                                 <td style={{ width: '100px' }}>
                                     <img
-                                        src={`http://10.10.101.193:5000${user.images}`}
+                                        src={`http://10.10.101.78:5000${user.images}`}
                                         alt={user.name}
                                         width="70"
                                         className="me-3"
@@ -132,7 +132,7 @@ const UserList = () => {
                                     <button type="button" className="btn-close" onClick={() => setShowDetailModal(false)}></button>
                                 </div>
                                 <div className="modal-body d-flex">
-                                    <img src={`http://10.10.101.193:5000${selectedUser.images}`} alt={selectedUser.name} style={{ width: '150px', height: '150px', objectFit: 'cover', marginRight: '20px' }} />
+                                    <img src={`http://10.10.101.78:5000${selectedUser.images}`} alt={selectedUser.name} style={{ width: '150px', height: '150px', objectFit: 'cover', marginRight: '20px' }} />
                                     <div>
                                         <p><strong>Name:</strong> {selectedUser.name}</p>
                                         <p><strong>Email:</strong> {selectedUser.email}</p>

@@ -14,7 +14,7 @@ const Leave = () => {
     useEffect(() => {
         const fetchSuperiors = async () => {
             try {
-                const response = await axios.get('http://10.10.101.193:5000/api/superiors');
+                const response = await axios.get('http://10.10.101.78:5000/api/superiors');
                 setSuperiors(response.data);
             } catch (error) {
                 console.error('Error fetching superiors:', error);
@@ -38,7 +38,7 @@ const Leave = () => {
         };
 
         try {
-            const response = await axios.post('http://10.10.101.193:5000/api/leave-request', leaveRequestData);
+            const response = await axios.post('http://10.10.101.78:5000/api/leave-request', leaveRequestData);
             alert('Leave request submitted successfully!');
             // Clear form fields after submission
             setName('');

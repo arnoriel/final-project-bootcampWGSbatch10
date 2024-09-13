@@ -28,7 +28,7 @@ function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://10.10.101.193:5000/api/login', {
+      const response = await fetch('http://10.10.101.78:5000/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,8 +1,47 @@
+/* Main Content */
 .main-content {
   padding: 20px;
   background-color: #f4f6f8;
   min-height: 100vh;
   margin-left: 250px; /* Adjust based on Sidebar width */
+}
+
+/* Tombol untuk primary dan danger */
+.btn-primary,
+.btn-danger {
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.btn-primary:disabled,
+.btn-danger:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
 .period-buttons {
@@ -12,9 +51,6 @@
 }
 
 .period-buttons button {
-  background-color: #007bff;
-  color: #fff;
-  border: none;
   padding: 10px 20px;
   border-radius: 5px;
   font-size: 16px;
@@ -30,12 +66,14 @@
   background-color: #0056b3;
 }
 
+/* Error message */
 .error-message {
   color: red;
   margin-bottom: 20px;
   font-weight: bold;
 }
 
+/* Input styling */
 input[type="text"] {
   margin-bottom: 20px;
   padding: 10px;
@@ -45,6 +83,7 @@ input[type="text"] {
   font-size: 16px;
 }
 
+/* Table styling */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -77,6 +116,7 @@ table tbody tr:last-child td {
   border-bottom: none;
 }
 
+/* Modal styling */
 .modal {
   display: none; /* Secara default disembunyikan */
   position: fixed;
@@ -114,6 +154,7 @@ table tbody tr:last-child td {
   }
 }
 
+/* Pagination styling */
 .pagination {
   display: flex;
   justify-content: center;

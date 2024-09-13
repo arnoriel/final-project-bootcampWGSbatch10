@@ -40,7 +40,7 @@ function Register() {
     formData.append('role', form.role);
 
     try {
-      const response = await fetch('http://10.10.101.193:5000/api/register', {
+      const response = await fetch('http://10.10.101.78:5000/api/register', {
         method: 'POST',
         body: formData
       });

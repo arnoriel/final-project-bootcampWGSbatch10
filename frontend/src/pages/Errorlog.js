@@ -9,7 +9,7 @@ const ErrorLogsPage = () => {
     useEffect(() => {
         const fetchErrorLogs = async () => {
             try {
-                const response = await axios.get('http://10.10.101.193:5000/api/error-logs');
+                const response = await axios.get('http://10.10.101.78:5000/api/error-logs');
                 setErrorLogs(response.data);
             } catch (error) {
                 console.error('Failed to fetch error logs:', error);
