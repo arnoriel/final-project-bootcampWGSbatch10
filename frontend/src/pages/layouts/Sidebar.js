@@ -1,24 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './Sidebar.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBars, faSignOutAlt, faUser, faClipboardList, faHistory, faUserClock } from '@fortawesome/free-solid-svg-icons';
 
 function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const role = localStorage.getItem('role');
 
-  // State untuk mengelola tampilan modal
+  // Ambil status collapse dari localStorage
+  const [collapsed, setCollapsed] = useState(localStorage.getItem('sidebarCollapsed') === 'true');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  useEffect(() => {
+    // Simpan status collapse ke localStorage setiap kali berubah
+    localStorage.setItem('sidebarCollapsed', collapsed);
+  }, [collapsed]);
 
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
-
     try {
-      const response = await fetch('http://10.10.101.78:5000/api/logout', {
+      const response = await fetch('http://192.168.0.104:5000/api/logout', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token }),
       });
 
@@ -36,38 +41,41 @@ function Sidebar() {
 
   const isActive = (path) => location.pathname === path;
 
-  // Fungsi untuk menampilkan modal logout
-  const handleLogoutClick = () => {
-    setShowLogoutModal(true);
-  };
+  const handleLogoutClick = () => setShowLogoutModal(true);
+  const closeModal = () => setShowLogoutModal(false);
 
-  // Fungsi untuk menutup modal logout
-  const closeModal = () => {
-    setShowLogoutModal(false);
+  const toggleCollapse = () => {
+    // Update collapsed state
+    setCollapsed(!collapsed);
   };
 
   return (
-    <div className="sidebar">
-      <div className="sidebar-title">MyOffice</div>
-      <ul>
+    <div className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
+      <div className="sidebar-header">
+        {!collapsed && <div className="sidebar-title">MyOffice</div>}
+        <button onClick={toggleCollapse} className="collapse-btn">
+          <FontAwesomeIcon icon={faBars} />
+        </button>
+      </div>
+      <ul className="sidebar-menu">
         <li>
-          <Link
-            to={role === 'superadmin' ? '/superadmin' : '/admin'}
-            className={isActive(role === 'superadmin' ? '/superadmin' : '/admin') ? 'active' : ''}
-          >
-            Dashboard
+          <Link to={role === 'superadmin' ? '/superadmin' : '/admin'} className={isActive(role === 'superadmin' ? '/superadmin' : '/admin') ? 'active' : ''}>
+            <FontAwesomeIcon icon={faClipboardList} />
+            {!collapsed && 'Dashboard'}
           </Link>
         </li>
         {role === 'superadmin' && (
           <>
             <li>
               <Link to="/manageadmins" className={isActive('/manageadmins') ? 'active' : ''}>
-                Manage Admins
+                <FontAwesomeIcon icon={faUser} />
+                {!collapsed && 'Manage Admins'}
               </Link>
             </li>
             <li>
               <Link to="/error-log" className={isActive('/error-log') ? 'active' : ''}>
-                Error Log
+                <FontAwesomeIcon icon={faClipboardList} />
+                {!collapsed && 'Error Log'}
               </Link>
             </li>
           </>
@@ -75,64 +83,48 @@ function Sidebar() {
         {(role === 'superadmin' || role === 'admin') && (
           <li>
             <Link to="/manageemployees" className={isActive('/manageemployees') ? 'active' : ''}>
-              Manage Employees
-            </Link>
-          </li>
-        )}
-        {(role === 'superadmin' || role === 'admin') && (
-          <li>
-            <Link to="/leave-approval" className={isActive('/leave-approval') ? 'active' : ''}>
-              Leave Approval
+              <FontAwesomeIcon icon={faUser} />
+              {!collapsed && 'Manage Employees'}
             </Link>
           </li>
         )}
         {(role === 'superadmin' || role === 'admin' || role === 'employee') && (
-            <li>
-              <Link to="/leave-history" className={isActive('/leave-history') ? 'active' : ''}>
-                Leave History
-              </Link>
-            </li>
+          <li>
+            <Link to="/leave-history" className={isActive('/leave-history') ? 'active' : ''}>
+              <FontAwesomeIcon icon={faHistory} />
+              {!collapsed && 'Leave History'}
+            </Link>
+          </li>
         )}
         {(role === 'superadmin' || role === 'admin' || role === 'employee') && (
           <>
             <li>
               <Link to="/attendance" className={isActive('/attendance') ? 'active' : ''}>
-                Attendance
+                <FontAwesomeIcon icon={faUserClock} />
+                {!collapsed && 'Attendance'}
               </Link>
             </li>
             <li>
               <Link to="/employee-list" className={isActive('/employee-list') ? 'active' : ''}>
-                Employee List
+                <FontAwesomeIcon icon={faUser} />
+                {!collapsed && 'Employee List'}
               </Link>
             </li>
           </>
         )}
       </ul>
       <button onClick={handleLogoutClick} className="logout-button">
-        Logout
+        <FontAwesomeIcon icon={faSignOutAlt} />
+        {!collapsed && 'Logout'}
       </button>
 
-      {/* Modal Logout */}
       {showLogoutModal && (
-        <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-dialog-centered" onClick={closeModal}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h5 className="modal-title">Confirm Logout</h5>
-                <button type="button" className="btn-close" onClick={closeModal}></button>
-              </div>
-              <div className="modal-body">
-                <p>Are you sure you want to log out?</p>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={closeModal}>
-                  Cancel
-                </button>
-                <button type="button" className="btn btn-danger" onClick={handleLogout}>
-                  Logout
-                </button>
-              </div>
-            </div>
+        <div className="modal-backdrop">
+          <div className="modal-content">
+            <h5>Confirm Logout</h5>
+            <p>Are you sure you want to log out?</p>
+            <button onClick={closeModal}>Cancel</button>
+            <button onClick={handleLogout}>Logout</button>
           </div>
         </div>
       )}
