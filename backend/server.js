@@ -254,12 +254,12 @@ app.post('/api/check-duplicate', async (req, res) => {
 
 // POST Leave Request (New Leave Request Submission)
 app.post('/api/leave-request', async (req, res) => {
-    const { name, email, leave_type, reason, superior, status } = req.body;
+    const { name, email, leave_type, reason, status } = req.body; // Remove superior
 
     try {
         const result = await pool.query(
-            "INSERT INTO leave_requests (name, email, leave_type, reason, superior, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-            [name, email, leave_type, reason, superior, status]
+            "INSERT INTO leave_requests (name, email, leave_type, reason, status) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+            [name, email, leave_type, reason, status] // Remove superior
         );
         res.status(201).json(result.rows[0]);
     } catch (error) {
@@ -323,24 +323,6 @@ app.put('/api/leave-requests/:id', async (req, res) => {
         }
 
         res.status(200).json(result.rows[0]);
-    } catch (error) {
-        console.error(error);
-        await logErrorToDatabase(error.message, error.stack);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-});
-
-// GET Admin and Superadmin Users for Leave Request Superior Selection
-app.get('/api/superiors', async (req, res) => {
-    try {
-        // Fetch users with role 'admin' or 'superadmin'
-        const superiors = await pool.query("SELECT id, name FROM users WHERE role IN ('admin', 'superadmin')");
-        
-        if (superiors.rows.length === 0) {
-            return res.status(404).json({ message: 'No superiors found' });
-        }
-
-        res.status(200).json(superiors.rows);
     } catch (error) {
         console.error(error);
         await logErrorToDatabase(error.message, error.stack);
@@ -861,5 +843,5 @@ app.get('/api/error-logs', async (req, res) => {
 
 //Port
 app.listen(port, () => {
-    console.log(`Server running on http://10.10.101.78:${port}`);
+    console.log(`Server running on http://192.168.0.104:${port}`);
 });

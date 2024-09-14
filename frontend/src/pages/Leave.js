@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import './Leave.css'; // Mengimpor CSS custom
 
@@ -7,23 +7,7 @@ const Leave = () => {
     const [email, setEmail] = useState('');
     const [leaveType, setLeaveType] = useState('Choose Leave Type');
     const [reason, setReason] = useState('');
-    const [superior, setSuperior] = useState('');
-    const [superiors, setSuperiors] = useState([]);
     const [status, setStatus] = useState('Pending');
-
-    useEffect(() => {
-        const fetchSuperiors = async () => {
-            try {
-                const response = await axios.get('http://10.10.101.78:5000/api/superiors');
-                setSuperiors(response.data);
-            } catch (error) {
-                console.error('Error fetching superiors:', error);
-                alert('Failed to fetch superiors. Please try again.');
-            }
-        };
-
-        fetchSuperiors();
-    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -33,19 +17,17 @@ const Leave = () => {
             email,
             leave_type: leaveType,
             reason,
-            superior,
-            status,
+            status, // Removed superior
         };
 
         try {
-            const response = await axios.post('http://10.10.101.78:5000/api/leave-request', leaveRequestData);
+            const response = await axios.post('http://192.168.0.104:5000/api/leave-request', leaveRequestData);
             alert('Leave request submitted successfully!');
             // Clear form fields after submission
             setName('');
             setEmail('');
             setLeaveType('Choose Leave Type');
             setReason('');
-            setSuperior('');
             setStatus('Pending');
         } catch (error) {
             console.error('Error submitting leave request:', error);
@@ -86,7 +68,7 @@ const Leave = () => {
                             onChange={(e) => setLeaveType(e.target.value)}
                             required
                         >
-                            <option value="Choose Leave Type" disabled>Choose Leave Type</option> {/* Placeholder */}
+                            <option value="Choose Leave Type" disabled>Choose Leave Type</option>
                             <option value="Sick">Sick</option>
                             <option value="Leave">Leave</option>
                             <option value="Others">Others</option>
@@ -101,24 +83,6 @@ const Leave = () => {
                             onChange={(e) => setReason(e.target.value)}
                             required
                         ></textarea>
-                    </div>
-                    <div className="form-group mb-4">
-                        <label>Superior</label>
-                        <select
-                            className="form-select"
-                            value={superior}
-                            onChange={(e) => setSuperior(e.target.value)}
-                            required
-                        >
-                            <option value="">Select Superior</option>
-                            {superiors.length > 0 ? (
-                                superiors.map(sup => (
-                                    <option key={sup.id} value={sup.id}>{sup.name}</option>
-                                ))
-                            ) : (
-                                <option value="">No superiors available</option>
-                            )}
-                        </select>
                     </div>
                     <button type="submit" className="btn btn-primary w-100">Submit</button>
                 </form>

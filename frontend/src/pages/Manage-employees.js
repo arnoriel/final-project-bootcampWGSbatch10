@@ -55,7 +55,7 @@ const ManageEmployees = () => {
             let response;
 
             if (searchQuery) {
-                response = await axios.get('http://10.10.101.78:5000/api/search', {
+                response = await axios.get('http://192.168.0.104:5000/api/search', {
                     params: {
                         query: searchQuery,
                         role: 'employee' // Menambahkan role employee
@@ -63,7 +63,7 @@ const ManageEmployees = () => {
                 });
                 setEmployees(response.data || []);
             } else {
-                response = await axios.get('http://10.10.101.78:5000/api/employees', {
+                response = await axios.get('http://192.168.0.104:5000/api/employees', {
                     params: {
                         page: currentPage,
                         limit: rowsPerPage
@@ -89,7 +89,7 @@ const ManageEmployees = () => {
                 setErrors(prevErrors => ({ ...prevErrors, email: 'Email should be user@example.com' }));
             } else {
                 try {
-                    const response = await axios.post('http://10.10.101.78:5000/api/check-duplicate', { email: value });
+                    const response = await axios.post('http://192.168.0.104:5000/api/check-duplicate', { email: value });
                     if (response.data.exists) {
                         setErrors(prevErrors => ({ ...prevErrors, email: 'Email already Registered' }));
                     } else {
@@ -106,7 +106,7 @@ const ManageEmployees = () => {
                 setErrors(prevErrors => ({ ...prevErrors, phone: 'Phone should be started with format 0 or +62' }));
             } else {
                 try {
-                    const response = await axios.post('http://10.10.101.78:5000/api/check-duplicate', { phone: value });
+                    const response = await axios.post('http://192.168.0.104:5000/api/check-duplicate', { phone: value });
                     if (response.data.exists) {
                         setErrors(prevErrors => ({ ...prevErrors, phone: 'Phone number already Registered' }));
                     } else {
@@ -159,7 +159,7 @@ const ManageEmployees = () => {
         formData.append('image', newEmployee.image);
 
         try {
-            await axios.post('http://10.10.101.78:5000/api/register', formData);
+            await axios.post('http://192.168.0.104:5000/api/register', formData);
             fetchEmployees();
             resetNewEmployeeForm();
             setShowAddModal(false);
@@ -180,7 +180,7 @@ const ManageEmployees = () => {
         formData.append('image', editingEmployee.image);
 
         try {
-            await axios.put(`http://10.10.101.78:5000/api/employees/${editingEmployee.id}`, formData);
+            await axios.put(`http://192.168.0.104:5000/api/employees/${editingEmployee.id}`, formData);
             fetchEmployees();
             resetEditingEmployeeForm();
             setShowUpdateModal(false);
@@ -196,7 +196,7 @@ const ManageEmployees = () => {
 
     const deleteEmployee = async (id) => {
         try {
-            await axios.delete(`http://10.10.101.78:5000/api/employees/${id}`);
+            await axios.delete(`http://192.168.0.104:5000/api/employees/${id}`);
             fetchEmployees();
         } catch (error) {
             console.error(error);
@@ -212,7 +212,7 @@ const ManageEmployees = () => {
     const confirmDeleteEmployee = async () => {
         if (employeeToDelete) {
             try {
-                await axios.delete(`http://10.10.101.78:5000/api/employees/${employeeToDelete.id}`);
+                await axios.delete(`http://192.168.0.104:5000/api/employees/${employeeToDelete.id}`);
                 fetchEmployees();
                 setShowDeleteModal(false);
             } catch (error) {
@@ -234,7 +234,7 @@ const ManageEmployees = () => {
             division: employee.division,
             department: employee.department,  // Tambahkan department di sini
             image: employee.images,
-            imagePreview: `http://10.10.101.78:5000${employee.images}`,
+            imagePreview: `http://192.168.0.104:5000${employee.images}`,
         });
         setShowUpdateModal(true);
         setCurrentModal('update');
@@ -518,7 +518,7 @@ const ManageEmployees = () => {
                                     <button type="button" className="btn-close" onClick={() => setShowDetailModal(false)}></button>
                                 </div>
                                 <div className="modal-body d-flex">
-                                    <img src={`http://10.10.101.78:5000${selectedEmployee.images}`} alt={selectedEmployee.name} style={{ width: '150px', height: '150px', objectFit: 'cover', marginRight: '20px' }} />
+                                    <img src={`http://192.168.0.104:5000${selectedEmployee.images}`} alt={selectedEmployee.name} style={{ width: '150px', height: '150px', objectFit: 'cover', marginRight: '20px' }} />
                                     <div>
                                         <p><strong>Name:</strong> {selectedEmployee.name}</p>
                                         <p><strong>Email:</strong> {selectedEmployee.email}</p>
@@ -549,7 +549,7 @@ const ManageEmployees = () => {
                             <tr key={employee.id} className="align-middle">
                                 <td style={{ width: '100px' }}>
                                     <img
-                                        src={`http://10.10.101.78:5000${employee.images}`}
+                                        src={`http://192.168.0.104:5000${employee.images}`}
                                         alt={employee.name}
                                         width="70"
                                         className="me-3"

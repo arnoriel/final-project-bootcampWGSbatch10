@@ -19,7 +19,7 @@ function Employee() {
     }
 
     // Fetch nama pengguna dari backend
-    axios.get('http://10.10.101.78:5000/api/user', {
+    axios.get('http://192.168.0.104:5000/api/user', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
