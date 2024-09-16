@@ -254,12 +254,12 @@ app.post('/api/check-duplicate', async (req, res) => {
 
 // POST Leave Request (New Leave Request Submission)
 app.post('/api/leave-request', async (req, res) => {
-    const { name, email, leave_type, reason, status } = req.body; // Remove superior
+    const { name, email, leave_type, reason, status, superior_name, superior_email } = req.body; // Include superior
 
     try {
         const result = await pool.query(
-            "INSERT INTO leave_requests (name, email, leave_type, reason, status) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-            [name, email, leave_type, reason, status] // Remove superior
+            "INSERT INTO leave_requests (name, email, leave_type, reason, status, superior_name, superior_email) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+            [name, email, leave_type, reason, status, superior_name, superior_email] // Include superior
         );
         res.status(201).json(result.rows[0]);
     } catch (error) {
@@ -271,14 +271,17 @@ app.post('/api/leave-request', async (req, res) => {
 
 //Get Leave Request
 app.get('/api/leave-requests', async (req, res) => {
-    const { role } = req.query; // Get the user role from the query parameter
+    const { role, superior_name } = req.query; // Tambahkan query superior_name
 
     if (role !== 'admin' && role !== 'superadmin') {
         return res.status(403).json({ message: 'Unauthorized access' });
     }
 
     try {
-        const leaveRequests = await pool.query("SELECT * FROM leave_requests WHERE status = 'Pending'");
+        const leaveRequests = await pool.query(
+            "SELECT * FROM leave_requests WHERE status = 'Pending' AND superior_name = $1", 
+            [superior_name] // Filter leave request berdasarkan superior_name
+        );
         res.status(200).json(leaveRequests.rows);
     } catch (error) {
         console.error(error);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Leave.css'; // Mengimpor CSS custom
 
@@ -8,16 +8,33 @@ const Leave = () => {
     const [leaveType, setLeaveType] = useState('Choose Leave Type');
     const [reason, setReason] = useState('');
     const [status, setStatus] = useState('Pending');
+    const [admins, setAdmins] = useState([]); // State untuk menyimpan data admin dan superadmin
+    const [selectedSuperior, setSelectedSuperior] = useState(''); // State untuk menyimpan superior yang dipilih
+
+    // Mengambil data admin dan superadmin dari backend
+    useEffect(() => {
+        axios.get('http://192.168.0.104:5000/api/users?role=admin,superadmin')
+            .then(response => {
+                setAdmins(response.data); // Simpan data admin dan superadmin di state
+            })
+            .catch(error => {
+                console.error('Error fetching admins:', error);
+            });
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const superiorEmail = admins.find(admin => admin.name === selectedSuperior)?.email; // Cari email berdasarkan superior yang dipilih
 
         const leaveRequestData = {
             name,
             email,
             leave_type: leaveType,
             reason,
-            status, // Removed superior
+            status,
+            superior_name: selectedSuperior, // Masukkan superior yang dipilih
+            superior_email: superiorEmail // Masukkan email superior
         };
 
         try {
@@ -29,6 +46,7 @@ const Leave = () => {
             setLeaveType('Choose Leave Type');
             setReason('');
             setStatus('Pending');
+            setSelectedSuperior(''); // Reset superior
         } catch (error) {
             console.error('Error submitting leave request:', error);
             alert('Failed to submit leave request. Please try again.');
@@ -83,6 +101,22 @@ const Leave = () => {
                             onChange={(e) => setReason(e.target.value)}
                             required
                         ></textarea>
+                    </div>
+                    <div className="form-group mb-3">
+                        <label>Select Superior</label>
+                        <select
+                            className="form-select"
+                            value={selectedSuperior}
+                            onChange={(e) => setSelectedSuperior(e.target.value)}
+                            required
+                        >
+                            <option value="">Choose Superior</option>
+                            {admins.map(admin => (
+                                <option key={admin.id} value={admin.name}>
+                                    {admin.name} ({admin.role})
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <button type="submit" className="btn btn-primary w-100">Submit</button>
                 </form>
