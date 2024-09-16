@@ -52,7 +52,11 @@ function Sidebar() {
   return (
     <div className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
-        {!collapsed && <div className="sidebar-title">MyOffice</div>}
+        {!collapsed && (
+          <div className="sidebar-title">
+            MyOffice
+          </div>
+        )}
         <button onClick={toggleCollapse} className="collapse-btn">
           <FontAwesomeIcon icon={faBars} />
         </button>

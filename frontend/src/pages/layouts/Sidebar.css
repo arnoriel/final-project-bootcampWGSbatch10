@@ -25,23 +25,18 @@
 /* Header Sidebar */
 .sidebar-header {
   display: flex;
-  justify-content: space-between; /* Ini akan memastikan tombol dan teks MyOffice berada di ujung yang berbeda */
-  align-items: center; /* Menyelaraskan secara vertikal */
+  justify-content: space-between; /* Menjaga jarak antara MyOffice dan tombol */
+  align-items: center;            /* Vertikal sejajar */
+  padding: 0 15px;
   width: 100%;
-  padding: 0 15px; /* Mengatur padding untuk memberi jarak */
 }
 
 .sidebar-title {
   font-size: 28px;
   color: #ffffff;
   font-weight: bold;
-  margin-bottom: 30px;
-  text-align: center;
-  width: 100%;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-  transition: opacity 0.3s ease;
+  margin: 0;
+  text-align: left;
 }
 
 .sidebar.collapsed .sidebar-title {
@@ -54,8 +49,8 @@
   color: white;
   cursor: pointer;
   font-size: 1.5em;
-  transition: color 0.3s ease;
-  margin-left: auto; /* Menyelaraskan tombol titik tiga ke kanan */
+  margin-left: auto;
+  padding: 0;
 }
 
 .collapse-btn:hover {
@@ -67,7 +62,9 @@
   list-style-type: none;
   padding: 0;
   width: 100%;
+  margin-top: 20px; /* Menambahkan jarak di atas menu */
 }
+
 
 .sidebar ul li {
   width: 100%;
@@ -102,7 +99,7 @@
 }
 
 .sidebar ul li a .fa-icon {
-  margin-right: 10px; /* Menambahkan jarak antara ikon dan teks */
+  margin-right: 20px; /* Tambahkan lebih banyak jarak antara ikon dan teks */
   font-size: 1.2em;
 }
 

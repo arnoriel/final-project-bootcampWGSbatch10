@@ -11,12 +11,12 @@ function Superadmin() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-
+  
     if (!token) {
       navigate('/login', { replace: true });
       return;
     }
-
+  
     axios.get('http://192.168.0.104:5000/api/user', {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -24,25 +24,26 @@ function Superadmin() {
     })
     .then(response => {
       setName(response.data.name);
+  
+      // Setelah mendapatkan nama admin, gunakan nama ini untuk mengambil leave request
+      axios.get('http://192.168.0.104:5000/api/leave-requests', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        params: { role: 'superadmin', superior_name: response.data.name } // Kirim superior_name sebagai query
+      })
+      .then(response => {
+        setLeaveRequests(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching leave requests:', error);
+      });
     })
     .catch(error => {
       console.error('Error fetching user data:', error);
       navigate('/login', { replace: true });
     });
-
-    axios.get('http://192.168.0.104:5000/api/leave-requests', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      params: { role: 'superadmin' }
-    })
-    .then(response => {
-      setLeaveRequests(response.data);
-    })
-    .catch(error => {
-      console.error('Error fetching leave requests:', error);
-    });
-
+  
     window.history.replaceState(null, null, window.location.href);
     const handlePopState = () => {
       if (!localStorage.getItem('token')) {
@@ -50,11 +51,11 @@ function Superadmin() {
       }
     };
     window.addEventListener('popstate', handlePopState);
-
+  
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [navigate]);
+  }, [navigate]);  
 
   const handleStatusChange = (id, newStatus) => {
     const token = localStorage.getItem('token');
