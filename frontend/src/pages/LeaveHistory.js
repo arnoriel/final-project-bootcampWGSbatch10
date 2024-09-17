@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import axios from 'axios';
 import Sidebar from './layouts/Sidebar';
 import './layouts/MainContent.css';
@@ -18,6 +18,12 @@ const LeaveHistory = () => {
             console.error('Error fetching leave history:', error);
             alert('Failed to fetch leave history. Please try again.');
         }
+    };
+
+    // Format untuk tanggal (hari, tanggal/bulan/tahun)
+    const formatDate = (dateString) => {
+        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        return new Date(dateString).toLocaleDateString('en-US', options); // Menggunakan locale 'id-ID' untuk format Indonesia
     };
 
     return (
@@ -45,7 +51,7 @@ const LeaveHistory = () => {
                                     <td>{leave.leave_type}</td>
                                     <td>{leave.reason}</td>
                                     <td>{leave.status}</td>
-                                    <td>{new Date(leave.created_at).toLocaleDateString()}</td>
+                                    <td>{formatDate(leave.created_at)}</td>
                                 </tr>
                             ))}
                         </tbody>

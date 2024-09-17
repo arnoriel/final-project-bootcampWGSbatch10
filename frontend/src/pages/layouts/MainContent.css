@@ -7,6 +7,48 @@
   margin-left: 250px; /* Adjust based on Sidebar width */
 }
 
+/* Card styling */
+.card {
+  background-color: #ffffff; /* Pastikan latar belakang putih */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Tambahkan shadow agar lebih menonjol */
+  padding: 20px;
+  margin-bottom: 20px; /* Jarak bawah untuk memberikan ruang */
+  border: 1px solid #ddd; /* Tambahkan border untuk membedakan card */
+}
+
+/* Card body styling */
+.card-body {
+  padding: 0; /* Menghilangkan padding default jika ada */
+}
+
+/* Styling for buttons in the table */
+.table .btn {
+  margin: 0; /* Menghilangkan margin */
+  padding: 5px 10px; /* Menyesuaikan padding */
+  font-size: 14px; /* Ukuran font lebih kecil */
+}
+
+.table .btn-success {
+  background-color: #28a745;
+  border: none;
+  color: #fff;
+}
+
+.table .btn-success:hover {
+  background-color: #218838;
+}
+
+.table .btn-danger {
+  background-color: #dc3545;
+  border: none;
+  color: #fff;
+}
+
+.table .btn-danger:hover {
+  background-color: #c82333;
+}
+
 /* Tombol untuk primary dan danger */
 .btn-danger {
   padding: 10px 20px;

@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './layouts/Sidebar'; // Import sidebar
 import './layouts/MainContent.css'; // Import CSS untuk konten utama
 import axios from 'axios'; // Import axios
-import {jwtDecode} from 'jwt-decode'; // Import jwt-decode untuk memecahkan token
+import { jwtDecode } from 'jwt-decode'; // Import jwt-decode untuk memecahkan token
 
 function Superadmin() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [leaveRequests, setLeaveRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -23,7 +25,6 @@ function Superadmin() {
       const { role } = decoded;
 
       if (role !== 'superadmin') {
-        // Jika role bukan superadmin, arahkan ke halaman login
         navigate('/login', { replace: true });
         return;
       }
@@ -38,23 +39,22 @@ function Superadmin() {
         setName(response.data.name);
 
         // Setelah mendapatkan nama superadmin, gunakan nama ini untuk mengambil leave request
-        axios.get('http://10.10.101.34:5000/api/leave-requests', {
+        return axios.get('http://10.10.101.34:5000/api/leave-requests', {
           headers: {
             'Authorization': `Bearer ${token}`
           },
           params: { role: 'superadmin', superior_name: response.data.name } // Kirim superior_name sebagai query
-        })
-        .then(response => {
-          setLeaveRequests(response.data);
-        })
-        .catch(error => {
-          console.error('Error fetching leave requests:', error);
         });
       })
+      .then(response => {
+        setLeaveRequests(response.data);
+      })
       .catch(error => {
-        console.error('Error fetching user data:', error);
-        navigate('/login', { replace: true });
-      });
+        console.error('Error fetching leave requests:', error);
+        setError('Failed to load leave requests.');
+      })
+      .finally(() => setLoading(false));
+
     } catch (error) {
       console.error('Invalid token:', error);
       navigate('/login', { replace: true });
@@ -90,6 +90,7 @@ function Superadmin() {
     })
     .catch(error => {
       console.error('Error updating leave request status:', error);
+      setError('Failed to update leave request status.');
     });
   };
 
@@ -98,11 +99,15 @@ function Superadmin() {
       <Sidebar />
       <div className="main-content">
         <h2>Welcome, {name}</h2>
-        <br></br>
-        <div className="card" style={{ width: '80%', padding: '10px' }}>
+        <br />
+        <div className="card" style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', border: '1px solid #ddd' }}>
           <div className="card-body">
-          <h3>Leave Requests</h3>
-            {leaveRequests.length > 0 ? (
+            <h3>Leave Requests</h3>
+            {loading ? (
+              <p>Loading...</p>
+            ) : error ? (
+              <p className="error-message">{error}</p>
+            ) : leaveRequests.length > 0 ? (
               <table className="table table-sm">
                 <thead>
                   <tr>
