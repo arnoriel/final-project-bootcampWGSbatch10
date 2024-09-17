@@ -4,8 +4,8 @@ import Sidebar from './layouts/Sidebar';
 import './layouts/MainContent.css';
 
 const calculateWorkTime = (user, isLive = false) => {
-    const loginTime = new Date(user.login_at);
-    const logoutTime = user.logout_at ? new Date(user.logout_at) : new Date();
+    const loginTime = new Date(user.login_at_original); // Menggunakan tanggal asli
+    const logoutTime = user.logout_at_original ? new Date(user.logout_at_original) : new Date(); // Menggunakan tanggal asli atau sekarang jika live
     const diffInMs = logoutTime.getTime() - loginTime.getTime();
     const hours = Math.floor(diffInMs / 1000 / 60 / 60);
     const minutes = Math.floor((diffInMs / 1000 / 60) % 60);
@@ -15,7 +15,15 @@ const calculateWorkTime = (user, isLive = false) => {
 
 const formatDateToLocalString = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleString();
+    return date.toLocaleString('en-GB', { 
+        weekday: 'long', // Menambahkan hari dalam format panjang (misalnya, "Monday")
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit'
+    });
 };
 
 const Attendance = () => {
@@ -57,11 +65,15 @@ const Attendance = () => {
                 },
             });
 
+            // Simpan login_at dan logout_at sebagai objek Date, dan format hanya untuk tampilan
             const dataWithLocalTime = response.data.attendance.map(record => ({
                 ...record,
-                login_at: formatDateToLocalString(record.login_at),
+                login_at_original: new Date(record.login_at), // Menyimpan Date asli
+                logout_at_original: record.logout_at ? new Date(record.logout_at) : null,
+                login_at: formatDateToLocalString(record.login_at), // Tampilkan tanggal yang diformat
                 logout_at: record.logout_at ? formatDateToLocalString(record.logout_at) : null,
             }));
+
             setAttendanceData(dataWithLocalTime);
             setTotal(response.data.total);
         } catch (err) {
@@ -119,11 +131,11 @@ const Attendance = () => {
                     <button className={period === 'last_year' ? 'active' : ''} onClick={() => setPeriod('last_year')}>Last Year</button>
                 </div>
                 <p>Rows per page:
-                <select className="rows-per-page" value={limit} onChange={handleLimitChange}>
-                    <option value={10}>10 rows</option>
-                    <option value={20}>20 rows</option>
-                    <option value={50}>50 rows</option>
-                </select>
+                    <select className="rows-per-page" value={limit} onChange={handleLimitChange}>
+                        <option value={10}>10 rows</option>
+                        <option value={20}>20 rows</option>
+                        <option value={50}>50 rows</option>
+                    </select>
                 </p>
                 {error && <p className="error-message">{error}</p>}
 
@@ -143,7 +155,7 @@ const Attendance = () => {
                         ) : (
                             filteredData.map((record) => (
                                 <tr key={record.user_id} onClick={() => handleUserClick(record)}>
-                                    <td>{record.name}</td>
+                                    <td>{record.name} | {record.role}</td>
                                     <td>{record.login_at}</td>
                                     <td>{record.logout_at ? record.logout_at : 'Still logged in'}</td>
                                 </tr>
@@ -164,12 +176,15 @@ const Attendance = () => {
 
                 {selectedUser && (
                     <div className="modal show" onClick={(e) => { if (e.target.classList.contains('modal')) closeModal(); }}>
-                        <div className="modal-content">
-                            <h2>{selectedUser.name}'s Work Time</h2>
-                            <p>Total Work Time: {selectedUser.logout_at ? calculateWorkTime(selectedUser) : liveWorkTime}</p>
+                        <div className="modal-dialog-centered">
+                            <div className="modal-content">
+                                <h2>{selectedUser.name}'s Work Time</h2>
+                                <p>Total Work Time: {selectedUser.logout_at ? calculateWorkTime(selectedUser) : liveWorkTime}</p>
+                            </div>
                         </div>
                     </div>
                 )}
+
             </div>
         </div>
     );

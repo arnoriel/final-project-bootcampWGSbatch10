@@ -417,7 +417,8 @@ app.get('/api/attendance', async (req, res) => {
         const attendanceQuery = `
             SELECT 
                 u.id as user_id, 
-                u.name, 
+                u.name,
+                u.role, 
                 to_char(a.login_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as login_at, 
                 to_char(a.logout_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as logout_at,
                 CASE 

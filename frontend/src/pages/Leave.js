@@ -15,7 +15,9 @@ const Leave = () => {
     useEffect(() => {
         axios.get('http://10.10.101.34:5000/api/users?role=admin,superadmin')
             .then(response => {
-                setAdmins(response.data); // Simpan data admin dan superadmin di state
+                // Filter hanya user dengan role admin atau superadmin
+                const filteredAdmins = response.data.filter(user => user.role !== 'employee');
+                setAdmins(filteredAdmins); // Simpan data admin dan superadmin yang terfilter di state
             })
             .catch(error => {
                 console.error('Error fetching admins:', error);

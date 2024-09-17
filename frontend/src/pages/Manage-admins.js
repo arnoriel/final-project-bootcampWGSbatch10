@@ -504,7 +504,6 @@ const ManageAdmins = () => {
                     </div>
                 </div>
 
-
                 {selectedAdmin && (
                     <div
                         className={`modal fade ${showDetailModal ? 'show d-block' : ''}`}

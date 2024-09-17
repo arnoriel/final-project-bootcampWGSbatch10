@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faSignOutAlt, faUser, faClipboardList, faHistory, faUserClock } from '@fortawesome/free-solid-svg-icons';
-import {jwtDecode} from 'jwt-decode'; // Import jwtDecode untuk decode token
+import { jwtDecode } from 'jwt-decode'; // Import jwtDecode untuk decode token
 
 function Sidebar() {
   const navigate = useNavigate();
@@ -81,8 +81,10 @@ function Sidebar() {
       </div>
       <ul className="sidebar-menu">
         <li>
-          <Link to={role === 'superadmin' ? '/superadmin' : '/admin'} className={isActive(role === 'superadmin' ? '/superadmin' : '/admin') ? 'active' : ''}>
-            <FontAwesomeIcon icon={faClipboardList} />
+          {/* Link dashboard untuk setiap role */}
+          <Link to={role === 'superadmin' ? '/superadmin' : role === 'admin' ? '/admin' : '/employee'} 
+                className={isActive(role === 'superadmin' ? '/superadmin' : role === 'admin' ? '/admin' : '/employee') ? 'active' : ''}>
+            <FontAwesomeIcon icon={faClipboardList} className="fa-icon" />
             {!collapsed && 'Dashboard'}
           </Link>
         </li>
@@ -90,13 +92,13 @@ function Sidebar() {
           <>
             <li>
               <Link to="/manageadmins" className={isActive('/manageadmins') ? 'active' : ''}>
-                <FontAwesomeIcon icon={faUser} />
+                <FontAwesomeIcon icon={faUser} className="fa-icon" />
                 {!collapsed && 'Manage Admins'}
               </Link>
             </li>
             <li>
               <Link to="/error-log" className={isActive('/error-log') ? 'active' : ''}>
-                <FontAwesomeIcon icon={faClipboardList} />
+                <FontAwesomeIcon icon={faClipboardList} className="fa-icon" />
                 {!collapsed && 'Error Log'}
               </Link>
             </li>
@@ -105,15 +107,16 @@ function Sidebar() {
         {(role === 'superadmin' || role === 'admin') && (
           <li>
             <Link to="/manageemployees" className={isActive('/manageemployees') ? 'active' : ''}>
-              <FontAwesomeIcon icon={faUser} />
+              <FontAwesomeIcon icon={faUser} className="fa-icon" />
               {!collapsed && 'Manage Employees'}
             </Link>
           </li>
         )}
-        {(role === 'superadmin' || role === 'admin' || role === 'employee') && (
+        {/* Tampilkan Leave History hanya untuk admin atau superadmin */}
+        {(role === 'superadmin' || role === 'admin') && (
           <li>
             <Link to="/leave-history" className={isActive('/leave-history') ? 'active' : ''}>
-              <FontAwesomeIcon icon={faHistory} />
+              <FontAwesomeIcon icon={faHistory} className="fa-icon" />
               {!collapsed && 'Leave History'}
             </Link>
           </li>
@@ -122,13 +125,13 @@ function Sidebar() {
           <>
             <li>
               <Link to="/attendance" className={isActive('/attendance') ? 'active' : ''}>
-                <FontAwesomeIcon icon={faUserClock} />
+                <FontAwesomeIcon icon={faUserClock} className="fa-icon" />
                 {!collapsed && 'Attendance'}
               </Link>
             </li>
             <li>
               <Link to="/employee-list" className={isActive('/employee-list') ? 'active' : ''}>
-                <FontAwesomeIcon icon={faUser} />
+                <FontAwesomeIcon icon={faUser} className="fa-icon" />
                 {!collapsed && 'Employee List'}
               </Link>
             </li>
@@ -136,7 +139,7 @@ function Sidebar() {
         )}
       </ul>
       <button onClick={handleLogoutClick} className="logout-button">
-        <FontAwesomeIcon icon={faSignOutAlt} />
+        <FontAwesomeIcon icon={faSignOutAlt} className="fa-icon" />
         {!collapsed && 'Logout'}
       </button>
 
