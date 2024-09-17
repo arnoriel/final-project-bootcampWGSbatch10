@@ -325,6 +325,7 @@ app.put('/api/leave-requests/:id', async (req, res) => {
     }
 
     try {
+        // Update status leave request
         const result = await pool.query(
             "UPDATE leave_requests SET status = $1 WHERE id = $2 RETURNING *",
             [status, id]
@@ -334,6 +335,39 @@ app.put('/api/leave-requests/:id', async (req, res) => {
             return res.status(404).json({ message: 'Leave request not found' });
         }
 
+        const leaveRequest = result.rows[0];
+
+        // Format status approval
+        const statusMessage = status === 'Approved' ? 'approved' : 'declined';
+
+        // Persiapkan email untuk user
+        const mailOptions = {
+            from: 'no_reply@gmail.com',
+            to: leaveRequest.email, // Email user yang meminta cuti
+            subject: `Leave Request ${statusMessage}`,
+            text: `
+                Dear ${leaveRequest.name},
+
+                Your leave request has been ${statusMessage} by ${leaveRequest.superior_name}.
+                
+                Leave Type: ${leaveRequest.leave_type}
+                Reason: ${leaveRequest.reason}
+
+                Regards,
+                MyOffice Team
+            `
+        };
+
+        // Kirim email
+        transport.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log('Error sending email:', error.message);
+            } else {
+                console.log('Leave request status email sent:', info.response);
+            }
+        });
+
+        // Berikan respon berhasil
         res.status(200).json(result.rows[0]);
     } catch (error) {
         console.error(error);
