@@ -311,3 +311,143 @@ table tbody tr:last-child td {
     transform: scale(1);
   }
 }
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 200px; /* Sesuaikan dengan sidebar pada layar lebih kecil */
+    padding: 15px; /* Mengurangi padding */
+  }
+
+  .card {
+    padding: 15px;
+  }
+
+  .table {
+    font-size: 12px; /* Mengurangi ukuran font tabel */
+  }
+
+  .table .btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .btn-primary, .btn-danger {
+    font-size: 14px;
+  }
+
+  .pagination button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .modal-content {
+    padding: 15px;
+  }
+
+  .img-thumbnail {
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 200px; /* Sesuaikan dengan sidebar pada layar lebih kecil */
+    padding: 15px; /* Mengurangi padding */
+  }
+
+  .card {
+    padding: 15px;
+  }
+
+  .table {
+    font-size: 12px;
+  }
+
+  .table .btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .btn-primary, .btn-danger {
+    font-size: 14px;
+  }
+
+  .pagination button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .modal-content {
+    padding: 15px;
+  }
+
+  .img-thumbnail {
+    max-width: 120px;
+  }
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 480px) {
+  .main-content {
+    margin-left: 0; /* Hapus margin-left untuk perangkat kecil */
+    padding: 10px;
+  }
+
+  .card {
+    padding: 10px;
+  }
+
+  .table-container {
+    max-width: 100%;
+  }
+
+  .table {
+    font-size: 10px;
+    overflow-x: auto; /* Tambahkan scroll horizontal */
+    display: block; /* Pastikan tabel berperilaku sebagai block-level element */
+  }
+
+  .table thead {
+    display: block; /* Agar header tetap di atas saat scroll */
+    width: 100%; /* Agar header memenuhi lebar tabel */
+  }
+
+  .table tbody {
+    display: block;
+    width: 100%;
+    overflow-x: auto; /* Scroll horizontal untuk tabel body */
+  }
+
+  .table th, .table td {
+    padding: 8px;
+    font-size: 10px;
+    white-space: nowrap; /* Mencegah teks membungkus ke baris berikutnya */
+  }
+
+  .table .btn {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+
+  .btn-primary, .btn-danger {
+    font-size: 12px;
+  }
+
+  .pagination button {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .modal-content {
+    padding: 10px;
+  }
+
+  .img-thumbnail {
+    max-width: 100px;
+  }
+  
+  .period-buttons button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}

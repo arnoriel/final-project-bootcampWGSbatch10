@@ -67,3 +67,42 @@
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Media Queries untuk Responsivitas */
+@media (max-width: 768px) {
+  /* Responsif untuk Tablet */
+  .welcome-container h1 {
+    font-size: 3rem;
+  }
+
+  .welcome-container p {
+    font-size: 1.2rem;
+  }
+
+  .welcome-button {
+    padding: 8px 25px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  /* Responsif untuk Handphone */
+  .welcome-container h1 {
+    font-size: 2.5rem;
+  }
+
+  .welcome-container p {
+    font-size: 1rem;
+    margin-bottom: 30px;
+  }
+
+  .welcome-buttons {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .welcome-button {
+    padding: 8px 20px;
+    font-size: 1rem;
+  }
+}
