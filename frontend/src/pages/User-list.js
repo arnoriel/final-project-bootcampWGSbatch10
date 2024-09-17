@@ -9,10 +9,13 @@ const UserList = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
 
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(6); // Default rows per page
+
     useEffect(() => {
         const fetchUsersAndStatus = async () => {
             try {
-                // Mengambil data pengguna dan status pengguna secara paralel
                 const [usersResponse, statusResponse] = await Promise.all([
                     axios.get('http://10.10.101.34:5000/api/users'),
                     axios.get('http://10.10.101.34:5000/api/users/status')
@@ -21,13 +24,11 @@ const UserList = () => {
                 const usersData = usersResponse.data;
                 const statusData = statusResponse.data;
 
-                // Gabungkan data status dengan data pengguna
                 const usersWithStatus = usersData.map(user => {
                     const statusInfo = statusData.find(status => status.id === user.id);
-                    return { ...user, status: statusInfo ? statusInfo.status : 'offline' }; // Tambahkan status
+                    return { ...user, status: statusInfo ? statusInfo.status : 'offline' };
                 });
 
-                // Filter out superadmin berdasarkan role
                 const filteredUsers = usersWithStatus.filter(user => user.role !== 'superadmin');
 
                 setUsers(filteredUsers);
@@ -41,6 +42,7 @@ const UserList = () => {
 
     const handleSearch = (event) => {
         setSearchTerm(event.target.value);
+        setCurrentPage(1); // Reset to the first page on search
     };
 
     const handleUserClick = (user) => {
@@ -48,18 +50,33 @@ const UserList = () => {
         setShowDetailModal(true);
     };
 
-    // Filter dan urutkan pengguna berdasarkan status
     const filteredUsers = users
-        .filter(user => 
+        .filter(user =>
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase()) 
+            user.email.toLowerCase().includes(searchTerm.toLowerCase())
         )
         .sort((a, b) => {
-            // Urutkan "online" di atas "offline"
             if (a.status === 'online' && b.status !== 'online') return -1;
             if (a.status !== 'online' && b.status === 'online') return 1;
-            return 0; // Tetap sama jika keduanya memiliki status yang sama
+            return 0;
         });
+
+    // Calculate paginated data
+    const indexOfLastUser = currentPage * rowsPerPage;
+    const indexOfFirstUser = indexOfLastUser - rowsPerPage;
+    const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+
+    // Calculate pagination
+    const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    const handleRowsPerPageChange = (event) => {
+        setRowsPerPage(Number(event.target.value));
+        setCurrentPage(1); // Reset to the first page when rows per page changes
+    };
 
     return (
         <div>
@@ -73,9 +90,23 @@ const UserList = () => {
                     onChange={handleSearch}
                     style={{ marginBottom: '20px', padding: '10px', width: '100%' }}
                 />
+                <div style={{ marginBottom: '20px' }}>
+                    <label htmlFor="rows-per-page">Rows per page:</label>
+                    <select
+                        id="rows-per-page"
+                        value={rowsPerPage}
+                        onChange={handleRowsPerPageChange}
+                        style={{ marginLeft: '10px' }}
+                    >
+                        <option value={6}>6</option>
+                        <option value={11}>11</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
+                </div>
                 <table>
                     <tbody>
-                        {filteredUsers.length > 0 ? filteredUsers.map((user) => (
+                        {currentUsers.length > 0 ? currentUsers.map((user) => (
                             <tr key={user.id} className="align-middle">
                                 <td style={{ width: '100px' }}>
                                     <img
@@ -94,7 +125,6 @@ const UserList = () => {
                                     >
                                         <strong>{user.name}</strong> | {user.department}
                                         <p>{user.email}</p>
-                                        {/* Tampilkan status online/offline */}
                                         <span style={{
                                             display: 'inline-block',
                                             width: '10px',
@@ -114,6 +144,31 @@ const UserList = () => {
                         )}
                     </tbody>
                 </table>
+
+                {/* Pagination Controls */}
+                <div className="pagination">
+                    <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    >
+                        Previous
+                    </button>
+                    {Array.from({ length: totalPages }, (_, index) => (
+                        <button
+                            key={index + 1}
+                            onClick={() => handlePageChange(index + 1)}
+                            className={currentPage === index + 1 ? 'active' : ''}
+                        >
+                            {index + 1}
+                        </button>
+                    ))}
+                    <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                    </button>
+                </div>
 
                 {selectedUser && (
                     <div
