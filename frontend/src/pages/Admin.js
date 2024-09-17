@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './layouts/Sidebar'; // Import sidebar
 import './layouts/MainContent.css'; // Import CSS untuk konten utama
 import axios from 'axios'; // Import axios
+import {jwtDecode} from 'jwt-decode'; // Import jwt-decode untuk memecahkan token
 
 function Admin() {
   const navigate = useNavigate();
@@ -11,39 +12,55 @@ function Admin() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-  
+
     if (!token) {
       navigate('/login', { replace: true });
       return;
     }
-  
-    axios.get('http://192.168.0.104:5000/api/user', {
-      headers: {
-        'Authorization': `Bearer ${token}`
+
+    try {
+      const decoded = jwtDecode(token); // Decode token untuk mendapatkan role
+      const { role } = decoded;
+
+      if (role !== 'admin') {
+        // Jika role bukan admin, arahkan ke halaman lain
+        navigate('/login', { replace: true });
+        return;
       }
-    })
-    .then(response => {
-      setName(response.data.name);
-  
-      // Setelah mendapatkan nama admin, gunakan nama ini untuk mengambil leave request
-      axios.get('http://192.168.0.104:5000/api/leave-requests', {
+      
+      // Ambil data user dan leave requests jika role adalah admin
+      axios.get('http://10.10.101.34:5000/api/user', {
         headers: {
           'Authorization': `Bearer ${token}`
-        },
-        params: { role: 'admin', superior_name: response.data.name } // Kirim superior_name sebagai query
+        }
       })
       .then(response => {
-        setLeaveRequests(response.data);
+        setName(response.data.name);
+
+        // Setelah mendapatkan nama admin, gunakan nama ini untuk mengambil leave request
+        axios.get('http://10.10.101.34:5000/api/leave-requests', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          params: { role: 'admin', superior_name: response.data.name } // Kirim superior_name sebagai query
+        })
+        .then(response => {
+          setLeaveRequests(response.data);
+        })
+        .catch(error => {
+          console.error('Error fetching leave requests:', error);
+        });
       })
       .catch(error => {
-        console.error('Error fetching leave requests:', error);
+        console.error('Error fetching user data:', error);
+        navigate('/login', { replace: true });
       });
-    })
-    .catch(error => {
-      console.error('Error fetching user data:', error);
+    } catch (error) {
+      console.error('Invalid token:', error);
       navigate('/login', { replace: true });
-    });
-  
+    }
+
+    // Cegah user kembali ke halaman setelah logout dengan menonaktifkan tombol back
     window.history.replaceState(null, null, window.location.href);
     const handlePopState = () => {
       if (!localStorage.getItem('token')) {
@@ -51,16 +68,16 @@ function Admin() {
       }
     };
     window.addEventListener('popstate', handlePopState);
-  
+
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [navigate]);  
+  }, [navigate]);
 
   const handleStatusChange = (id, newStatus) => {
     const token = localStorage.getItem('token');
 
-    axios.put(`http://192.168.0.104:5000/api/leave-requests/${id}`, { status: newStatus }, {
+    axios.put(`http://10.10.101.34:5000/api/leave-requests/${id}`, { status: newStatus }, {
       headers: {
         'Authorization': `Bearer ${token}`
       },

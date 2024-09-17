@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {jwtDecode} from 'jwt-decode'; // Import jwt-decode untuk memecahkan token
 import './Auth.css';
 
 function Login() {
@@ -11,15 +12,21 @@ function Login() {
   // Cek apakah user sudah login saat pertama kali halaman di-load
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
 
-    if (token && role) {
-      if (role === 'superadmin') {
-        navigate('/superadmin');
-      } else if (role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/employee');
+    if (token) {
+      try {
+        const decoded = jwtDecode(token); // Decode token untuk mendapatkan role
+        const { role } = decoded;
+
+        if (role === 'superadmin') {
+          navigate('/superadmin');
+        } else if (role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/employee');
+        }
+      } catch (err) {
+        console.error('Invalid token');
       }
     }
   }, [navigate]);
@@ -28,7 +35,7 @@ function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://192.168.0.104:5000/api/login', {
+      const response = await fetch('http://10.10.101.34:5000/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,11 +46,14 @@ function Login() {
 
       if (response.ok) {
         localStorage.setItem('token', data.token);
-        localStorage.setItem('role', data.role);
 
-        if (data.role === 'superadmin') {
+        // Decode token untuk mendapatkan role
+        const decoded = jwtDecode(data.token);
+        const { role } = decoded;
+
+        if (role === 'superadmin') {
           navigate('/superadmin');
-        } else if (data.role === 'admin') {
+        } else if (role === 'admin') {
           navigate('/admin');
         } else {
           navigate('/employee');

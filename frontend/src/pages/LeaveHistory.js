@@ -12,7 +12,7 @@ const LeaveHistory = () => {
 
     const fetchLeaveHistory = async () => {
         try {
-            const response = await axios.get('http://192.168.0.104:5000/api/leave-history'); // Ganti dengan URL API yang benar
+            const response = await axios.get('http://10.10.101.34:5000/api/leave-history'); // Ganti dengan URL API yang benar
             setLeaveHistory(response.data);
         } catch (error) {
             console.error('Error fetching leave history:', error);

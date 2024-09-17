@@ -1,3 +1,4 @@
+// frontend/src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -15,7 +16,7 @@ import ManageEmployees from './pages/Manage-employees';
 import UserList from './pages/User-list';
 import Attendance from './pages/Attendance';
 import ErrorLog from './pages/Errorlog';
-import Leave from './pages/Leave'; // Import the Leave component
+import Leave from './pages/Leave';
 import LeaveHistory from './pages/LeaveHistory';
 import ProtectedRoute from './ProtectedRoute';
 

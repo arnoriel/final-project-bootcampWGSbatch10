@@ -1,9 +1,9 @@
-// frontend/src/pages/Employee.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './layouts/Sidebar'; // Import sidebar
 import './layouts/MainContent.css'; // Import CSS untuk konten utama
 import axios from 'axios'; // Import axios
+import {jwtDecode} from 'jwt-decode'; // Import jwt-decode untuk memecahkan token
 
 function Employee() {
   const navigate = useNavigate();
@@ -18,20 +18,34 @@ function Employee() {
       return;
     }
 
-    // Fetch nama pengguna dari backend
-    axios.get('http://192.168.0.104:5000/api/user', {
-      headers: {
-        'Authorization': `Bearer ${token}`
+    try {
+      const decoded = jwtDecode(token); // Decode token untuk mendapatkan role
+      const { role } = decoded;
+
+      if (role !== 'employee') {
+        // Jika role bukan employee, arahkan ke halaman login
+        navigate('/login', { replace: true });
+        return;
       }
-    })
-    .then(response => {
-      setName(response.data.name);
-    })
-    .catch(error => {
-      console.error('Error fetching user data:', error);
-      // Jika ada error (misalnya token tidak valid), arahkan ke login
+
+      // Fetch nama pengguna dari backend jika role adalah employee
+      axios.get('http://10.10.101.34:5000/api/user', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => {
+        setName(response.data.name);
+      })
+      .catch(error => {
+        console.error('Error fetching user data:', error);
+        // Jika ada error (misalnya token tidak valid), arahkan ke login
+        navigate('/login', { replace: true });
+      });
+    } catch (error) {
+      console.error('Invalid token:', error);
       navigate('/login', { replace: true });
-    });
+    }
 
     // Cegah user kembali ke halaman setelah logout dengan menonaktifkan tombol back
     window.history.replaceState(null, null, window.location.href);

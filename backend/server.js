@@ -59,33 +59,42 @@ const transport = nodemailer.createTransport({
 // Middleware untuk autentikasi
 const authenticate = async (req, res, next) => {
     const authHeader = req.headers.authorization;
+
+    // Periksa apakah authorization header ada
     if (!authHeader) {
         return res.status(401).json({ message: 'Authorization header missing' });
     }
 
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.split(' ')[1]; // Ekstrak token dari header
     if (!token) {
         return res.status(401).json({ message: 'Token missing' });
     }
 
     try {
-        const decoded = jwt.verify(token, 'your_jwt_secret');
+        // Verifikasi token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
         const userId = decoded.id;
 
-        // Cek apakah token masih aktif di active_sessions
+        // Cek apakah sesi masih aktif di active_sessions
         const session = await pool.query(
             'SELECT * FROM active_sessions WHERE user_id = $1 AND session_token = $2',
             [userId, token]
         );
+
         if (session.rows.length === 0) {
             return res.status(403).json({ message: 'Session expired or not active' });
         }
 
-        req.user = decoded; // Simpan data user ke request
+        // Jika valid, tambahkan data user ke request untuk digunakan di endpoint lain
+        req.user = decoded; // decoded akan berisi id, email, role
         next();
     } catch (error) {
-        console.error(error);
-        res.status(403).json({ message: 'Invalid token' });
+        // Jika token tidak valid atau expired
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: 'Token expired' });
+        }
+        console.error('Authentication error:', error);
+        return res.status(403).json({ message: 'Invalid token' });
     }
 };
 
@@ -564,20 +573,27 @@ app.use('/api/protected-route', async (req, res, next) => {
 // Endpoint untuk mendapatkan data pengguna saat ini
 app.get('/api/user', authenticate, async (req, res) => {
     try {
-        const userId = req.user.id;
-        const user = await pool.query('SELECT name FROM users WHERE id = $1', [userId]);
-
-        if (user.rows.length === 0) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        res.json({ name: user.rows[0].name });
+      const userId = req.user.id;
+      const userRole = req.user.role;
+  
+      // Cek apakah role pengguna sesuai
+      if (userRole !== 'admin' && userRole !== 'employee' && userRole !== 'superadmin') {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+  
+      const user = await pool.query('SELECT name FROM users WHERE id = $1', [userId]);
+  
+      if (user.rows.length === 0) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      res.json({ name: user.rows[0].name });
     } catch (error) {
-        console.error(error);
-        await logErrorToDatabase(error.message, error.stack);
-        res.status(500).json({ message: 'Internal server error' });
+      console.error(error);
+      await logErrorToDatabase(error.message, error.stack);
+      res.status(500).json({ message: 'Internal server error' });
     }
-});
+  });  
 
 //Get Users
 app.get('/api/users', async (req, res) => {
@@ -846,5 +862,5 @@ app.get('/api/error-logs', async (req, res) => {
 
 //Port
 app.listen(port, () => {
-    console.log(`Server running on http://192.168.0.104:${port}`);
+    console.log(`Server running on http://10.10.101.34:${port}`);
 });

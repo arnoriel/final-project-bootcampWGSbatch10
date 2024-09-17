@@ -3,15 +3,33 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faSignOutAlt, faUser, faClipboardList, faHistory, faUserClock } from '@fortawesome/free-solid-svg-icons';
+import {jwtDecode} from 'jwt-decode'; // Import jwtDecode untuk decode token
 
 function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const role = localStorage.getItem('role');
+  const [role, setRole] = useState('');
 
   // Ambil status collapse dari localStorage
   const [collapsed, setCollapsed] = useState(localStorage.getItem('sidebarCollapsed') === 'true');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        setRole(decodedToken.role); // Ambil role dari token yang telah di-decode
+      } catch (error) {
+        console.error('Invalid token:', error);
+        localStorage.removeItem('token');
+        navigate('/login');
+      }
+    } else {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   useEffect(() => {
     // Simpan status collapse ke localStorage setiap kali berubah
@@ -21,7 +39,7 @@ function Sidebar() {
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch('http://192.168.0.104:5000/api/logout', {
+      const response = await fetch('http://10.10.101.34:5000/api/logout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token }),

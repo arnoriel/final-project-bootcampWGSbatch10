@@ -13,7 +13,7 @@ const Leave = () => {
 
     // Mengambil data admin dan superadmin dari backend
     useEffect(() => {
-        axios.get('http://192.168.0.104:5000/api/users?role=admin,superadmin')
+        axios.get('http://10.10.101.34:5000/api/users?role=admin,superadmin')
             .then(response => {
                 setAdmins(response.data); // Simpan data admin dan superadmin di state
             })
@@ -38,7 +38,7 @@ const Leave = () => {
         };
 
         try {
-            const response = await axios.post('http://192.168.0.104:5000/api/leave-request', leaveRequestData);
+            const response = await axios.post('http://10.10.101.34:5000/api/leave-request', leaveRequestData);
             alert('Leave request submitted successfully!');
             // Clear form fields after submission
             setName('');
