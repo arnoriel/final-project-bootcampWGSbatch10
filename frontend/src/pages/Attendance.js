@@ -15,13 +15,13 @@ const calculateWorkTime = (user, isLive = false) => {
 
 const formatDateToLocalString = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleString('en-GB', { 
+    return date.toLocaleString('en-GB', {
         weekday: 'long', // Menambahkan hari dalam format panjang (misalnya, "Monday")
-        day: '2-digit', 
-        month: '2-digit', 
+        day: '2-digit',
+        month: '2-digit',
         year: 'numeric',
-        hour: '2-digit', 
-        minute: '2-digit', 
+        hour: '2-digit',
+        minute: '2-digit',
         second: '2-digit'
     });
 };
@@ -180,6 +180,7 @@ const Attendance = () => {
                             <div className="modal-content">
                                 <h2>{selectedUser.name}'s Work Time</h2>
                                 <p>Total Work Time: {selectedUser.logout_at ? calculateWorkTime(selectedUser) : liveWorkTime}</p>
+                                <button className="close-button" onClick={closeModal}>Close</button> {/* Tombol X */}
                             </div>
                         </div>
                     </div>

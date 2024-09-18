@@ -1,0 +1,5 @@
+Day 20 Target:
+
+- Added show and Hide Password function
+- Added App Settings feature
+- Fixed Validation
