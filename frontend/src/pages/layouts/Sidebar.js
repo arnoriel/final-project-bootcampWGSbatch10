@@ -117,13 +117,6 @@ function Sidebar() {
                 {!collapsed && 'Manage Admins'}
               </Link>
             </li>
-            <li>
-              <Link to="/error-log" className={isActive('/error-log') ? 'active' : ''}>
-                <FontAwesomeIcon icon={faClipboardList} className="fa-icon" />
-                {!collapsed && 'Error Log'}
-              </Link>
-            </li>
-            
           </>
         )}
         {(role === 'superadmin' || role === 'admin') && (
@@ -133,6 +126,16 @@ function Sidebar() {
               {!collapsed && 'Manage Employees'}
             </Link>
           </li>
+        )}
+        {role === 'superadmin' &&  (
+          <>
+          <li>
+              <Link to="/error-log" className={isActive('/error-log') ? 'active' : ''}>
+                <FontAwesomeIcon icon={faClipboardList} className="fa-icon" />
+                {!collapsed && 'Error Log'}
+              </Link>
+            </li>
+          </>
         )}
         {/* Tampilkan Leave History hanya untuk admin atau superadmin */}
         {(role === 'superadmin' || role === 'admin') && (

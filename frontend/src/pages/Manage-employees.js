@@ -91,7 +91,7 @@ const ManageEmployees = () => {
                 try {
                     const response = await axios.post('http://10.10.101.34:5000/api/check-duplicate', { email: value });
                     if (response.data.exists) {
-                        setErrors(prevErrors => ({ ...prevErrors, email: 'Email already Registered' }));
+                        setErrors(prevErrors => ({ ...prevErrors, email: 'Email already registered' }));
                     } else {
                         setErrors(prevErrors => ({ ...prevErrors, email: '' }));
                     }
@@ -103,12 +103,12 @@ const ManageEmployees = () => {
     
         if (name === 'phone') {
             if (!value.startsWith('0') && !value.startsWith('+62')) {
-                setErrors(prevErrors => ({ ...prevErrors, phone: 'Phone should be started with format 0 or +62' }));
+                setErrors(prevErrors => ({ ...prevErrors, phone: 'Phone should start with 0 or +62' }));
             } else {
                 try {
                     const response = await axios.post('http://10.10.101.34:5000/api/check-duplicate', { phone: value });
                     if (response.data.exists) {
-                        setErrors(prevErrors => ({ ...prevErrors, phone: 'Phone number already Registered' }));
+                        setErrors(prevErrors => ({ ...prevErrors, phone: 'Phone number already registered' }));
                     } else {
                         setErrors(prevErrors => ({ ...prevErrors, phone: '' }));
                     }
@@ -314,7 +314,7 @@ const ManageEmployees = () => {
                                     onChange={(e) => handleInputChange(e, setNewEmployee)}
                                     className="form-control mb-2"
                                 />
-                                <label>Email  {errors.email && <span className="text-danger">{errors.email}</span>}</label>
+                                <label>Email {errors.email && <span className="text-danger">{errors.email}</span>}</label>
                                 <input
                                     type="email"
                                     name="email"
@@ -323,7 +323,7 @@ const ManageEmployees = () => {
                                     onChange={(e) => handleInputChange(e, setNewEmployee)}
                                     className={`form-control mb-2 ${errors.email ? 'is-invalid' : ''}`}
                                 />
-                                <label>Phone  {errors.phone && <span className="text-danger">{errors.phone}</span>}</label>
+                                <label>Phone {errors.phone && <span className="text-danger">{errors.phone}</span>}</label>
                                 <input
                                     type="text"
                                     name="phone"

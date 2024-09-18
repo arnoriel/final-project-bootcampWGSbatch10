@@ -181,13 +181,12 @@ app.use(async (err, req, res, next) => {
 
 // Register user with image upload
 app.post('/api/register', upload.single('image'), async (req, res) => {
-    const { name, email, phone, division, department, role } = req.body;  // Tambahkan department di sini
+    const { name, email, phone, division, department, role } = req.body;
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
-    const link = 'http://10.10.101.193:3000'
+    const link = 'http://10.10.101.43:3000';
     const userRole = role || 'employee';
     const password = generateReadablePassword();
-    const text = `
-    Dear ${name}
+    const text = `Dear ${name},
 
     Thanks for submitting your information to our number, here's your User Information for MyOffice App Account.
 
@@ -195,12 +194,12 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
     your phone: ${phone}
     your department: ${department}
     your division: ${division}
-    
+
     your password: ${password}
 
     Please keep this information privately because it's your personal account information, do not send it to others.
-    Open MyOffice app: ${link}
-    `
+    Open MyOffice app: ${link}`;
+
     const mailOptions = {
         from: 'no_reply@gmail.com',
         to: email,
@@ -209,12 +208,13 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
     };
 
     try {
+        // Perbaikan pengecekan duplikat email atau phone
         const existingUser = await pool.query('SELECT * FROM users WHERE email = $1 OR phone = $2', [email, phone]);
         if (existingUser.rows.length > 0) {
-            // Cek apakah duplikat karena email atau phone
-            if (existingUser.rows[0].email === email) {
+            const duplicateUser = existingUser.rows[0];
+            if (duplicateUser.email === email) {
                 return res.status(400).json({ message: 'Email already exists' });
-            } else if (existingUser.rows[0].phone === phone) {
+            } else if (duplicateUser.phone === phone) {
                 return res.status(400).json({ message: 'Phone number already exists' });
             }
         }
@@ -224,12 +224,12 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
         await pool.query(
             `INSERT INTO users (name, email, password, phone, division, department, images, role, updated_at) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP)`,
-            [name, email, hashedPassword, phone, division, department, imagePath, userRole]  // Tambahkan department ke query
+            [name, email, hashedPassword, phone, division, department, imagePath, userRole]
         );
 
         transport.sendMail(mailOptions, function(error, info) {
             if (error) {
-                console.log({error: error.message})
+                console.log({ error: error.message });
             } else {
                 console.log('Email sent: ' + info.response);
             }

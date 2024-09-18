@@ -7,7 +7,7 @@ import reportWebVitals from './reportWebVitals';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 const Index = () => {
-  const [appName, setAppName] = useState(''); // Default value
+  const [appName, setAppName] = useState('App'); // Default value
 
   // Fetch app name from the settings table
   useEffect(() => {

@@ -85,10 +85,10 @@ const ManageAdmins = () => {
     const checkDuplicate = async (field, value) => {
         try {
             const response = await axios.post('http://10.10.101.34:5000/api/check-duplicate', {
-                field,
-                value
+                email: field === 'email' ? value : '',
+                phone: field === 'phone' ? value : ''
             });
-            return response.data.isDuplicate;
+            return response.data.exists;  // Return whether there is a duplicate
         } catch (error) {
             console.error('Error checking duplicate:', error);
             return false;
@@ -105,7 +105,11 @@ const ManageAdmins = () => {
             } else {
                 setErrors(prevErrors => ({ ...prevErrors, email: '' }));
                 const isDuplicate = await checkDuplicate('email', value);
-                setErrors(prevErrors => ({ ...prevErrors, duplicateEmail: isDuplicate }));
+                if (isDuplicate) {
+                    setErrors(prevErrors => ({ ...prevErrors, duplicateEmail: 'Email already registered' }));
+                } else {
+                    setErrors(prevErrors => ({ ...prevErrors, duplicateEmail: '' }));
+                }
             }
         }
 
@@ -115,7 +119,11 @@ const ManageAdmins = () => {
             } else {
                 setErrors(prevErrors => ({ ...prevErrors, phone: '' }));
                 const isDuplicate = await checkDuplicate('phone', value);
-                setErrors(prevErrors => ({ ...prevErrors, duplicatePhone: isDuplicate }));
+                if (isDuplicate) {
+                    setErrors(prevErrors => ({ ...prevErrors, duplicatePhone: 'Phone already registered' }));
+                } else {
+                    setErrors(prevErrors => ({ ...prevErrors, duplicatePhone: '' }));
+                }
             }
         }
     };
@@ -300,7 +308,7 @@ const ManageAdmins = () => {
                     className="form-control mb-4"
                 />
 
-                {/* Modal Add Admin */}
+             {/* Modal add Admin*/}
                 <div className={`modal fade ${showAddModal ? 'show d-block' : ''}`} tabIndex="-1" style={{ backgroundColor: showAddModal ? 'rgba(0,0,0,0.5)' : '' }}>
                     <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
@@ -318,23 +326,23 @@ const ManageAdmins = () => {
                                     onChange={(e) => handleInputChange(e, setNewAdmin)}
                                     className="form-control mb-2"
                                 />
-                                <label>Email  {errors.email && <span className="text-danger">{errors.email}</span>}</label>
+                                <label>Email {errors.email && <span className="text-danger">{errors.email}</span>} {errors.duplicateEmail && <span className="text-danger">{errors.duplicateEmail}</span>}</label>
                                 <input
                                     type="email"
                                     name="email"
                                     placeholder="user@example.com"
                                     value={newAdmin.email}
                                     onChange={(e) => handleInputChange(e, setNewAdmin)}
-                                    className={`form-control mb-2 ${errors.email ? 'is-invalid' : ''}`}
+                                    className={`form-control mb-2 ${errors.email || errors.duplicateEmail ? 'is-invalid' : ''}`}
                                 />
-                                <label>Phone  {errors.phone && <span className="text-danger">{errors.phone}</span>}</label>
+                                <label>Phone {errors.phone && <span className="text-danger">{errors.phone}</span>} {errors.duplicatePhone && <span className="text-danger">{errors.duplicatePhone}</span>}</label>
                                 <input
                                     type="text"
                                     name="phone"
                                     placeholder="Phone"
                                     value={newAdmin.phone}
                                     onChange={(e) => handleInputChange(e, setNewAdmin)}
-                                    className={`form-control mb-2 ${errors.phone ? 'is-invalid' : ''}`}
+                                    className={`form-control mb-2 ${errors.phone || errors.duplicatePhone ? 'is-invalid' : ''}`}
                                 />
                                 <label>Department</label>
                                 <input
@@ -355,7 +363,7 @@ const ManageAdmins = () => {
                                     className="form-control mb-2"
                                 />
                                 <label>Image</label>
-                                {newAdmin.imagePreview && (  // Tambahkan ini untuk preview image
+                                {newAdmin.imagePreview && (  // Add this for image preview
                                     <div className="mb-2">
                                         <img src={newAdmin.imagePreview} alt="Preview" width="100" />
                                     </div>
@@ -370,7 +378,7 @@ const ManageAdmins = () => {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => handleCancel('add')}>Cancel</button>
-                                <button type="button" className="btn btn-primary" onClick={addAdmin} disabled={errors.email || errors.phone || !newAdmin.email || !newAdmin.phone}>Add Admin</button>
+                                <button type="button" className="btn btn-primary" onClick={addAdmin} disabled={!isFormValid()}>Add Admin</button>
                             </div>
                         </div>
                     </div>
@@ -385,7 +393,7 @@ const ManageAdmins = () => {
                                 <button type="button" className="btn-close" onClick={() => handleCancel('update')}></button>
                             </div>
                             <div className="modal-body">
-                            {editError && (
+                                {editError && (
                                     <div className="alert alert-danger">
                                         {editError}
                                     </div>
@@ -592,7 +600,7 @@ const ManageAdmins = () => {
                     ))}
                     <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
                 </Pagination>
-                
+
             </div>
         </div>
     );
