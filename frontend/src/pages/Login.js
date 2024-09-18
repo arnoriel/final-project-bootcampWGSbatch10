@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {jwtDecode} from 'jwt-decode'; // Import jwt-decode untuk memecahkan token
+import { jwtDecode } from 'jwt-decode'; // Import jwt-decode untuk memecahkan token
 import './Auth.css';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // State untuk fitur show password
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -93,9 +94,17 @@ function Login() {
             />
           </div>
           <div className="form-group">
-            <label>Password</label>
+            <div className="label-container">
+              <label>Password</label>
+              <span
+                className="show-hide-password"
+                onClick={() => setShowPassword(!showPassword)} // Toggle show/hide password
+              >
+                {showPassword ? 'Hide Password' : 'Show Password'}
+              </span>
+            </div>
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'} // Show or hide password
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

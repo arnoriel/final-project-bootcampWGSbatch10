@@ -1,4 +1,3 @@
-/* Auth.css */
 .auth-container {
   display: flex;
   justify-content: center;
@@ -30,9 +29,15 @@
   text-align: left;
 }
 
-.auth-form .form-group label {
-  display: block;
+.auth-form .label-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 5px;
+  height: 20px; /* Fixed height to prevent form resizing */
+}
+
+.auth-form .form-group label {
   font-weight: bold;
   color: #555;
 }
@@ -49,6 +54,19 @@
 .auth-form .form-group input:focus {
   border-color: #6a11cb;
   outline: none;
+}
+
+.auth-form .show-hide-password {
+  color: #007bff;
+  cursor: pointer;
+  font-size: 0.9em;
+  margin-left: 10px;
+  text-align: right;
+  white-space: nowrap; /* Prevent text from wrapping */
+}
+
+.auth-form .show-hide-password:hover {
+  text-decoration: underline;
 }
 
 .auth-button {
@@ -80,21 +98,19 @@
   margin-top: 10px;
   padding: 10px;
   width: 100%;
-  background-color: #4CAF50; /* Green background */
-  color: white; /* White text */
+  background-color: #4CAF50;
+  color: white;
   border: none;
   cursor: pointer;
   font-size: 16px;
 }
 
 .leave-button:hover {
-  background-color: #45a049; /* Darker green */
+  background-color: #45a049;
 }
-
 
 /* Media Queries untuk Responsivitas */
 @media (max-width: 768px) {
-  /* Menyesuaikan lebar kartu autentikasi */
   .auth-card {
     max-width: 350px;
     padding: 25px;
@@ -115,7 +131,6 @@
 }
 
 @media (max-width: 576px) {
-  /* Menyesuaikan tampilan untuk layar lebih kecil seperti handphone */
   .auth-container {
     padding: 10px;
   }

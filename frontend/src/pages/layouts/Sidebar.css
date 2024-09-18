@@ -2,7 +2,7 @@
 .sidebar {
   width: 250px;
   height: 100vh;
-  background: linear-gradient(145deg, #3b82f6, #9333ea); /* Gradient dari biru ke ungu */
+  background: linear-gradient(145deg, #3b82f6, #9333ea);
   padding-top: 20px;
   position: fixed;
   top: 0;
@@ -16,10 +16,31 @@
   border-bottom-right-radius: 15px;
   transition: width 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
   box-sizing: border-box;
+  overflow-y: auto; /* Enable vertical scroll */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+/* Custom Scrollbar */
+.sidebar::-webkit-scrollbar {
+  width: 8px; /* Lebar scroll pada sidebar */
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3); /* Warna scrollbar */
+  border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5); /* Warna ketika hover */
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background-color: transparent; /* Warna track scrollbar */
 }
 
 .sidebar.collapsed {
   width: 80px;
+  overflow-y: auto; /* Enable scrolling for collapsed state as well */
 }
 
 /* Header Sidebar */
@@ -62,7 +83,8 @@
   list-style-type: none;
   padding: 0;
   width: 100%;
-  margin-top: 20px; /* Menambahkan jarak di atas menu */
+  margin-top: 20px;
+  flex-grow: 1; /* Allow it to grow to fill available space */
 }
 
 .sidebar ul li {

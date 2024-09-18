@@ -1,0 +1,11 @@
+
+Day 19 Target:
+
+- Fixed Leave Request to Admin
+- Role Token
+- Fixed Layouts
+- Added Show days in Attendance
+- Fixed Dashboard
+- Email Approval for Leave Request
+- Show Day dan Date in Leave History
+- Added Pagination in Employee List

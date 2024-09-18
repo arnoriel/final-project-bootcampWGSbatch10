@@ -1,4 +1,3 @@
-// frontend/src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -18,6 +17,8 @@ import Attendance from './pages/Attendance';
 import ErrorLog from './pages/Errorlog';
 import Leave from './pages/Leave';
 import LeaveHistory from './pages/LeaveHistory';
+import Settings from './pages/Settings';
+import About from './pages/About';
 import ProtectedRoute from './ProtectedRoute';
 
 function App() {
@@ -76,6 +77,22 @@ function App() {
           element={
             <ProtectedRoute role={["superadmin", "admin", "employee"]}>
               <LeaveHistory />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute role="superadmin">
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <ProtectedRoute role={["superadmin", "admin", "employee"]}>
+              <About />
             </ProtectedRoute>
           }
         />

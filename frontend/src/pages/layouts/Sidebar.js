@@ -2,17 +2,38 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faSignOutAlt, faUser, faClipboardList, faHistory, faUserClock } from '@fortawesome/free-solid-svg-icons';
+import {
+  faBars, faSignOutAlt, faUser, faClipboardList, faHistory, faUserClock, faCog, faInfoCircle
+} from '@fortawesome/free-solid-svg-icons'; // Tambahkan ikon Settings dan About
 import { jwtDecode } from 'jwt-decode'; // Import jwtDecode untuk decode token
 
 function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [role, setRole] = useState('');
-
-  // Ambil status collapse dari localStorage
   const [collapsed, setCollapsed] = useState(localStorage.getItem('sidebarCollapsed') === 'true');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [appName, setAppName] = useState(''); // Default value
+
+  // Fetch app name from the settings table
+  useEffect(() => {
+    const fetchAppName = async () => {
+      try {
+        const response = await fetch('http://10.10.101.34:5000/api/settings');
+        if (response.ok) {
+          const data = await response.json();
+          const appSetting = data.find((setting) => setting.id === 1); // Assuming the app name is in the first setting
+          setAppName(appSetting ? appSetting.name : ''); 
+        } else {
+          console.error('Failed to fetch settings');
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      }
+    };
+
+    fetchAppName();
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -71,8 +92,8 @@ function Sidebar() {
     <div className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
         {!collapsed && (
-          <div className="sidebar-title">
-            MyOffice
+           <div className="sidebar-title">
+            {appName}
           </div>
         )}
         <button onClick={toggleCollapse} className="collapse-btn">
@@ -102,6 +123,7 @@ function Sidebar() {
                 {!collapsed && 'Error Log'}
               </Link>
             </li>
+            
           </>
         )}
         {(role === 'superadmin' || role === 'admin') && (
@@ -137,6 +159,23 @@ function Sidebar() {
             </li>
           </>
         )}
+        {(role === 'superadmin') && (
+          <>
+          <li>
+              <Link to="/settings" className={isActive('/settings') ? 'active' : ''}>
+                <FontAwesomeIcon icon={faCog} className="fa-icon" />
+                {!collapsed && 'Settings'}
+              </Link>
+            </li>
+          </>
+        )}
+        {/* Tambahkan link About */}
+        <li>
+          <Link to="/about" className={isActive('/about') ? 'active' : ''}>
+            <FontAwesomeIcon icon={faInfoCircle} className="fa-icon" />
+            {!collapsed && 'About'}
+          </Link>
+        </li>
       </ul>
       <button onClick={handleLogoutClick} className="logout-button">
         <FontAwesomeIcon icon={faSignOutAlt} className="fa-icon" />
