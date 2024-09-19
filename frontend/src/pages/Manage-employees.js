@@ -80,43 +80,81 @@ const ManageEmployees = () => {
         }
     };
 
-    const handleInputChange = async (e, setState) => {
+    const checkDuplicate = async (field, value, currentEmail = '', currentPhone = '') => {
+        try {
+            // Jika email/phone yang dimasukkan adalah milik sendiri, jangan cek duplikat
+            if ((field === 'email' && value === currentEmail) || (field === 'phone' && value === currentPhone)) {
+                return false;  // Tidak dianggap sebagai duplikat
+            }
+
+            const response = await axios.post('http://10.10.101.34:5000/api/check-duplicate', {
+                email: field === 'email' ? value : '',
+                phone: field === 'phone' ? value : ''
+            });
+
+            return response.data.exists;  // Return apakah ada duplikat
+        } catch (error) {
+            console.error('Error checking duplicate:', error);
+            return false;
+        }
+    };
+
+    const handleInputChange = async (e, setState, currentEmail = '', currentPhone = '') => {
         const { name, value } = e.target;
         setState(prevState => ({ ...prevState, [name]: value }));
-    
+
         if (name === 'email') {
-            if (!value.includes('@')) {
-                setErrors(prevErrors => ({ ...prevErrors, email: 'Email should be user@example.com' }));
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+                setErrors(prevErrors => ({ ...prevErrors, email: 'Email should be in format user@domain.com' }));
             } else {
-                try {
-                    const response = await axios.post('http://10.10.101.34:5000/api/check-duplicate', { email: value });
-                    if (response.data.exists) {
-                        setErrors(prevErrors => ({ ...prevErrors, email: 'Email already registered' }));
-                    } else {
-                        setErrors(prevErrors => ({ ...prevErrors, email: '' }));
-                    }
-                } catch (error) {
-                    console.error('Error checking email:', error);
+                setErrors(prevErrors => ({ ...prevErrors, email: '' }));
+                const isDuplicate = await checkDuplicate('email', value, currentEmail); // Kirim currentEmail untuk validasi
+                if (isDuplicate) {
+                    setErrors(prevErrors => ({ ...prevErrors, duplicateEmail: 'Email already registered' }));
+                } else {
+                    setErrors(prevErrors => ({ ...prevErrors, duplicateEmail: '' }));
                 }
             }
         }
-    
+
         if (name === 'phone') {
-            if (!value.startsWith('0') && !value.startsWith('+62')) {
+            const phoneStartsWith = value.startsWith('0') || value.startsWith('+62');
+            const phoneLengthValid = value.length >= 11 && value.length <= 13;
+            const phoneRegex = /^[0-9]+$/;
+
+            if (!phoneStartsWith) {
                 setErrors(prevErrors => ({ ...prevErrors, phone: 'Phone should start with 0 or +62' }));
+            } else if (!phoneLengthValid) {
+                setErrors(prevErrors => ({ ...prevErrors, phone: 'Phone should be between 11 and 13 digits' }));
+            } else if (!phoneRegex.test(value.replace('+62', ''))) {
+                setErrors(prevErrors => ({ ...prevErrors, phone: 'Phone should contain only digits' }));
             } else {
-                try {
-                    const response = await axios.post('http://10.10.101.34:5000/api/check-duplicate', { phone: value });
-                    if (response.data.exists) {
-                        setErrors(prevErrors => ({ ...prevErrors, phone: 'Phone number already registered' }));
-                    } else {
-                        setErrors(prevErrors => ({ ...prevErrors, phone: '' }));
-                    }
-                } catch (error) {
-                    console.error('Error checking phone:', error);
+                setErrors(prevErrors => ({ ...prevErrors, phone: '' }));
+                const isDuplicate = await checkDuplicate('phone', value, currentPhone); // Kirim currentPhone untuk validasi
+                if (isDuplicate) {
+                    setErrors(prevErrors => ({ ...prevErrors, duplicatePhone: 'Phone already registered' }));
+                } else {
+                    setErrors(prevErrors => ({ ...prevErrors, duplicatePhone: '' }));
                 }
             }
         }
+    };
+
+    const isFormValid = () => {
+        // Check that all fields are filled and no errors exist
+        return (
+            newEmployee.name &&
+            newEmployee.email &&
+            newEmployee.phone &&
+            newEmployee.department &&
+            newEmployee.division &&
+            newEmployee.image &&
+            !errors.email &&
+            !errors.phone &&
+            !errors.duplicateEmail &&
+            !errors.duplicatePhone
+        );
     };
 
     const handleImageChange = (e, setState) => {
@@ -314,24 +352,27 @@ const ManageEmployees = () => {
                                     onChange={(e) => handleInputChange(e, setNewEmployee)}
                                     className="form-control mb-2"
                                 />
-                                <label>Email {errors.email && <span className="text-danger">{errors.email}</span>}</label>
+
+                                <label>Email {errors.email && <span className="text-danger">{errors.email}</span>} {errors.duplicateEmail && <span className="text-danger">{errors.duplicateEmail}</span>}</label>
                                 <input
                                     type="email"
                                     name="email"
                                     placeholder="user@example.com"
                                     value={newEmployee.email}
                                     onChange={(e) => handleInputChange(e, setNewEmployee)}
-                                    className={`form-control mb-2 ${errors.email ? 'is-invalid' : ''}`}
+                                    className={`form-control mb-2 ${errors.email || errors.duplicateEmail ? 'is-invalid' : ''}`}
                                 />
-                                <label>Phone {errors.phone && <span className="text-danger">{errors.phone}</span>}</label>
+
+                                <label>Phone {errors.phone && <span className="text-danger">{errors.phone}</span>} {errors.duplicatePhone && <span className="text-danger">{errors.duplicatePhone}</span>}</label>
                                 <input
                                     type="text"
                                     name="phone"
                                     placeholder="Phone"
                                     value={newEmployee.phone}
                                     onChange={(e) => handleInputChange(e, setNewEmployee)}
-                                    className={`form-control mb-2 ${errors.phone ? 'is-invalid' : ''}`}
+                                    className={`form-control mb-2 ${errors.phone || errors.duplicatePhone ? 'is-invalid' : ''}`}
                                 />
+
                                 <label>Department</label>
                                 <input
                                     type="text"
@@ -341,6 +382,7 @@ const ManageEmployees = () => {
                                     onChange={(e) => handleInputChange(e, setNewEmployee)}
                                     className="form-control mb-2"
                                 />
+
                                 <label>Division</label>
                                 <input
                                     type="text"
@@ -350,8 +392,9 @@ const ManageEmployees = () => {
                                     onChange={(e) => handleInputChange(e, setNewEmployee)}
                                     className="form-control mb-2"
                                 />
+
                                 <label>Image</label>
-                                {newEmployee.imagePreview && (  // Preview image
+                                {newEmployee.imagePreview && (  // Show image preview
                                     <div className="mb-2">
                                         <img src={newEmployee.imagePreview} alt="Preview" width="100" />
                                     </div>
@@ -360,17 +403,19 @@ const ManageEmployees = () => {
                                     type="file"
                                     name="image"
                                     onChange={(e) => handleImageChange(e, setNewEmployee)}
-                                    className="form-control"
+                                    className={`form-control mb-2 ${errors.image ? 'is-invalid' : ''}`}
                                     ref={newEmployeeImageRef}
                                 />
+                                {errors.image && <span className="text-danger">{errors.image}</span>}
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => handleCancel('add')}>Cancel</button>
-                                <button type="button" className="btn btn-primary" onClick={addEmployee} disabled={errors.email || errors.phone || !newEmployee.email || !newEmployee.phone}>Add Employee</button>
+                                <button type="button" className="btn btn-primary" onClick={addEmployee} disabled={!isFormValid()}>Add Employee</button>
                             </div>
                         </div>
                     </div>
                 </div>
+
 
                 {/* Modal Update Employee */}
                 <div className={`modal fade ${showUpdateModal ? 'show d-block' : ''}`} tabIndex="-1" style={{ backgroundColor: showUpdateModal ? 'rgba(0,0,0,0.5)' : '' }}>
@@ -392,27 +437,30 @@ const ManageEmployees = () => {
                                     name="name"
                                     placeholder="Name"
                                     value={editingEmployee.name}
-                                    onChange={(e) => handleInputChange(e, setEditingEmployee)}
+                                    onChange={(e) => handleInputChange(e, setEditingEmployee, editingEmployee.email, editingEmployee.phone)} // Kirim currentEmail dan currentPhone
                                     className="form-control mb-2"
                                 />
-                                <label>Email  {errors.email && <span className="text-danger">{errors.email}</span>}</label>
+                                <label>Email  {errors.email && <span className="text-danger">{errors.email}</span>} {errors.duplicateEmail && <span className="text-danger">{errors.duplicateEmail}</span>}</label>
                                 <input
                                     type="email"
                                     name="email"
                                     placeholder="Email"
                                     value={editingEmployee.email}
-                                    onChange={(e) => handleInputChange(e, setEditingEmployee)}
-                                    className={`form-control mb-2 ${errors.email ? 'is-invalid' : ''}`}
+                                    onChange={(e) => handleInputChange(e, setEditingEmployee, editingEmployee.email, editingEmployee.phone)} // Kirim currentEmail dan currentPhone
+                                    className={`form-control mb-2 ${errors.email || errors.duplicateEmail ? 'is-invalid' : ''}`}
                                 />
-                                <label>Phone  {errors.phone && <span className="text-danger">{errors.phone}</span>}</label>
+
+                                <label>Phone  {errors.phone && <span className="text-danger">{errors.phone}</span>}  {errors.duplicatePhone && <span className="text-danger">{errors.duplicatePhone}</span>}</label>
                                 <input
                                     type="text"
                                     name="phone"
                                     placeholder="Phone"
                                     value={editingEmployee.phone}
-                                    onChange={(e) => handleInputChange(e, setEditingEmployee)}
-                                    className={`form-control mb-2 ${errors.phone ? 'is-invalid' : ''}`}
+                                    onChange={(e) => handleInputChange(e, setEditingEmployee, editingEmployee.email, editingEmployee.phone)} // Kirim currentEmail dan currentPhone
+                                    className={`form-control mb-2 ${errors.phone || errors.duplicatePhone ? 'is-invalid' : ''}`}
                                 />
+                               
+
                                 <label>Department</label>
                                 <input
                                     type="text"
@@ -422,6 +470,7 @@ const ManageEmployees = () => {
                                     onChange={(e) => handleInputChange(e, setEditingEmployee)}
                                     className="form-control mb-2"
                                 />
+
                                 <label>Division</label>
                                 <input
                                     type="text"
@@ -431,12 +480,14 @@ const ManageEmployees = () => {
                                     onChange={(e) => handleInputChange(e, setEditingEmployee)}
                                     className="form-control mb-2"
                                 />
+
                                 <label>Profile Picture</label>
                                 {editingEmployee.imagePreview && (
                                     <div className="mt-2">
                                         <img src={editingEmployee.imagePreview} alt="Preview" className="img-thumbnail" style={{ maxWidth: '200px' }} />
                                     </div>
                                 )}
+
                                 <label>Change Profile Picture (Optional)</label>
                                 <input
                                     type="file"
@@ -445,11 +496,11 @@ const ManageEmployees = () => {
                                     className="form-control"
                                     ref={editEmployeeImageRef}
                                 />
-
+                                {errors.image && <span className="text-danger">{errors.image}</span>}
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => handleCancel('update')}>Cancel</button>
-                                <button type="button" className="btn btn-primary" onClick={updateEmployee} disabled={errors.email || errors.phone}>Update Employee</button>
+                                <button type="button" className="btn btn-primary" onClick={updateEmployee} disabled={errors.email || errors.phone || errors.duplicateEmail || errors.duplicatePhone}>Update Employee</button>
                             </div>
                         </div>
                     </div>

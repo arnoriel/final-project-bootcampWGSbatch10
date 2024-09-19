@@ -14,16 +14,18 @@ function Sidebar() {
   const [collapsed, setCollapsed] = useState(localStorage.getItem('sidebarCollapsed') === 'true');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [appName, setAppName] = useState(''); // Default value
+  const [appVersion, setAppVersion] = useState(''); // Default value for version
 
-  // Fetch app name from the settings table
+  // Fetch app name and version from the settings table
   useEffect(() => {
-    const fetchAppName = async () => {
+    const fetchAppData = async () => {
       try {
         const response = await fetch('http://10.10.101.34:5000/api/settings');
         if (response.ok) {
           const data = await response.json();
-          const appSetting = data.find((setting) => setting.id === 1); // Assuming the app name is in the first setting
-          setAppName(appSetting ? appSetting.name : ''); 
+          const appSetting = data.find((setting) => setting.id === 1); // Assuming app details are in the first setting
+          setAppName(appSetting ? appSetting.name : '');
+          setAppVersion(appSetting ? appSetting.version : '');
         } else {
           console.error('Failed to fetch settings');
         }
@@ -32,7 +34,7 @@ function Sidebar() {
       }
     };
 
-    fetchAppName();
+    fetchAppData();
   }, []);
 
   useEffect(() => {
@@ -92,7 +94,7 @@ function Sidebar() {
     <div className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
         {!collapsed && (
-           <div className="sidebar-title">
+          <div className="sidebar-title">
             {appName}
           </div>
         )}
@@ -103,8 +105,8 @@ function Sidebar() {
       <ul className="sidebar-menu">
         <li>
           {/* Link dashboard untuk setiap role */}
-          <Link to={role === 'superadmin' ? '/superadmin' : role === 'admin' ? '/admin' : '/employee'} 
-                className={isActive(role === 'superadmin' ? '/superadmin' : role === 'admin' ? '/admin' : '/employee') ? 'active' : ''}>
+          <Link to={role === 'superadmin' ? '/superadmin' : role === 'admin' ? '/admin' : '/employee'}
+            className={isActive(role === 'superadmin' ? '/superadmin' : role === 'admin' ? '/admin' : '/employee') ? 'active' : ''}>
             <FontAwesomeIcon icon={faClipboardList} className="fa-icon" />
             {!collapsed && 'Dashboard'}
           </Link>
@@ -127,9 +129,9 @@ function Sidebar() {
             </Link>
           </li>
         )}
-        {role === 'superadmin' &&  (
+        {role === 'superadmin' && (
           <>
-          <li>
+            <li>
               <Link to="/error-log" className={isActive('/error-log') ? 'active' : ''}>
                 <FontAwesomeIcon icon={faClipboardList} className="fa-icon" />
                 {!collapsed && 'Error Log'}
@@ -164,7 +166,7 @@ function Sidebar() {
         )}
         {(role === 'superadmin') && (
           <>
-          <li>
+            <li>
               <Link to="/settings" className={isActive('/settings') ? 'active' : ''}>
                 <FontAwesomeIcon icon={faCog} className="fa-icon" />
                 {!collapsed && 'Settings'}
@@ -180,10 +182,20 @@ function Sidebar() {
           </Link>
         </li>
       </ul>
+
+      {!collapsed && appVersion && (
+        <div className="app-version" style={{ color: 'white' }}>
+          Version: {appVersion}
+        </div>
+      )}
+
+
       <button onClick={handleLogoutClick} className="logout-button">
         <FontAwesomeIcon icon={faSignOutAlt} className="fa-icon" />
         {!collapsed && 'Logout'}
       </button>
+
+
 
       {showLogoutModal && (
         <div className="modal-backdrop">
@@ -195,6 +207,7 @@ function Sidebar() {
           </div>
         </div>
       )}
+
     </div>
   );
 }

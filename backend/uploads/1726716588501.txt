@@ -1,0 +1,43 @@
+Due
+______
+Blender
+
+
+protege
+
+vlc
+mongodb
+netbeans
+
+packet tracer
+postman
+
+python
+ruby
+
+
+
+balsamic
+
+
+hadoop
+hbase
+android studio
+haskell
+oracleXE
+sqldeveloper
+
+
+Complete
+_________
+[complete]jdk
+[complete]vscode
+[complete]winrar
+[complete]cmder
+[completed]putty
+[complete]node js
+[complete]godot
+[complete]steam
+[complete]sublime text
+[complete]Discord
+[complete]Dev-cpp

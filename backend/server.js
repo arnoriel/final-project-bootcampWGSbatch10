@@ -261,15 +261,36 @@ app.post('/api/check-duplicate', async (req, res) => {
     }
 });
 
-// POST Leave Request (New Leave Request Submission)
+// POST Leave Request
 app.post('/api/leave-request', async (req, res) => {
-    const { name, email, leave_type, reason, status, superior_name, superior_email } = req.body; // Include superior
+    const { name, email, leave_type, reason, status, superior_name, superior_email } = req.body;
 
     try {
-        const result = await pool.query(
-            "INSERT INTO leave_requests (name, email, leave_type, reason, status, superior_name, superior_email) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
-            [name, email, leave_type, reason, status, superior_name, superior_email] // Include superior
+        // Check if the email exists in the users table
+        const userResult = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+
+        if (userResult.rowCount === 0) {
+            return res.status(400).json({ message: 'Invalid email. User not found.' });
+        }
+
+        // Check if a leave request was already submitted today
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Set to the start of today
+        const leaveResult = await pool.query(
+            "SELECT * FROM leave_requests WHERE email = $1 AND created_at >= $2",
+            [email, today]
         );
+
+        if (leaveResult.rowCount > 0) {
+            return res.status(400).json({ message: 'You have Submitted today.' });
+        }
+
+        // Insert the new leave request
+        const result = await pool.query(
+            "INSERT INTO leave_requests (name, email, leave_type, reason, status, superior_name, superior_email, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) RETURNING *",
+            [name, email, leave_type, reason, status, superior_name, superior_email]
+        );
+
         res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error(error);
@@ -277,6 +298,7 @@ app.post('/api/leave-request', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 //Get Leave Request
 app.get('/api/leave-requests', async (req, res) => {
@@ -406,11 +428,25 @@ app.post('/api/login', async (req, res) => {
             [user.rows[0].id, token]
         );
 
-        // Insert login record into the attendance table
-        await pool.query(
-            'INSERT INTO attendance (user_id, login_at) VALUES ($1, NOW())',
+        // Check if the user has an attendance record for today
+        const attendanceCheck = await pool.query(
+            `SELECT * FROM attendance WHERE user_id = $1 AND login_at::date = current_date`,
             [user.rows[0].id]
         );
+
+        if (attendanceCheck.rows.length > 0) {
+            // If the user has already logged in today, reset logout_at to NULL
+            await pool.query(
+                `UPDATE attendance SET logout_at = NULL WHERE user_id = $1 AND login_at::date = current_date`,
+                [user.rows[0].id]
+            );
+        } else {
+            // If no attendance record for today, insert a new one
+            await pool.query(
+                'INSERT INTO attendance (user_id, login_at) VALUES ($1, NOW())',
+                [user.rows[0].id]
+            );
+        }
 
         res.json({ message: 'Login successful', token, role: user.rows[0].role });
     } catch (error) {
@@ -508,9 +544,9 @@ app.post('/api/logout', async (req, res) => {
             return res.status(404).json({ message: 'Session not found' });
         }
 
-        // Update the logout time in the attendance table
+        // Update the logout time in the attendance table only for today
         await pool.query(
-            'UPDATE attendance SET logout_at = NOW() WHERE user_id = $1 AND logout_at IS NULL',
+            'UPDATE attendance SET logout_at = NOW() WHERE user_id = $1 AND login_at::date = current_date AND logout_at IS NULL',
             [userId]
         );
 
@@ -527,6 +563,37 @@ app.post('/api/logout', async (req, res) => {
     } catch (error) {
         console.error('Logout error:', error);
         res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Cron job to automatically log out users at 8 PM
+cron.schedule('0 20 * * *', async () => {  // 20:00 (8 PM) server time
+    try {
+        const activeSessions = await pool.query(
+            `SELECT user_id, session_token FROM active_sessions WHERE logout_at IS NULL`
+        );
+
+        for (const session of activeSessions.rows) {
+            // Log out each active user
+            await pool.query(
+                'UPDATE attendance SET logout_at = NOW() WHERE user_id = $1 AND login_at::date = current_date AND logout_at IS NULL',
+                [session.user_id]
+            );
+
+            // Update the session table logout_at time
+            await pool.query(
+                'UPDATE active_sessions SET logout_at = NOW() WHERE session_token = $1',
+                [session.session_token]
+            );
+
+            // Remove the session
+            await pool.query('DELETE FROM active_sessions WHERE session_token = $1', [session.session_token]);
+        }
+
+        console.log('All active users logged out at 8 PM');
+    } catch (error) {
+        console.error('Error logging out users at 8 PM:', error);
+        await logErrorToDatabase(error.message, error.stack);
     }
 });
 
