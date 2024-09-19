@@ -602,8 +602,10 @@ const ManageEmployees = () => {
                                     <img
                                         src={`http://10.10.101.34:5000${employee.images}`}
                                         alt={employee.name}
-                                        width="70"
+                                        width="100"
+                                        height="100"
                                         className="me-3"
+                                        style={{ objectFit: 'cover',  cursor: 'pointer' }}
                                         onClick={() => handleShowDetails(employee)}
                                     />
                                 </td>

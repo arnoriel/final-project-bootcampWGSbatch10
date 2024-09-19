@@ -183,12 +183,13 @@ app.use(async (err, req, res, next) => {
 app.post('/api/register', upload.single('image'), async (req, res) => {
     const { name, email, phone, division, department, role } = req.body;
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
-    const link = 'http://10.10.101.43:3000';
+    const link = 'http://10.10.101.34:3000';
     const userRole = role || 'employee';
     const password = generateReadablePassword();
-    const text = `Dear ${name},
+    const text =
+    `Dear ${name},
 
-    Thanks for submitting your information to our number, here's your User Information for MyOffice App Account.
+    Thank You for Submitting your Information to our number, here's your User Information for Our App Account.
 
     your email: ${email}
     your phone: ${phone}
@@ -198,12 +199,13 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
     your password: ${password}
 
     Please keep this information privately because it's your personal account information, do not send it to others.
-    Open MyOffice app: ${link}`;
+    Open The App: ${link}
+    You have to be at the Office to log in`
 
     const mailOptions = {
         from: 'no_reply@gmail.com',
         to: email,
-        subject: 'New MyOffice account',
+        subject: 'New Our App Account',
         text
     };
 

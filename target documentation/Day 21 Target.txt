@@ -1,0 +1,8 @@
+Day 21 Target:
+
+- Added function continue work time when user logged in again
+- Added function for automatic logout when user is still logged in until 08:00PM
+- Fixed Validation Bugs
+- Fixed Leave Request Admin Bugs
+- Added function to allow user submit leave request one time per day
+- Fixed Sidebar for mobile users

@@ -112,9 +112,10 @@ const UserList = () => {
                                     <img
                                         src={`http://10.10.101.34:5000${user.images}`}
                                         alt={user.name}
-                                        width="70"
+                                        width="100"
+                                        height="100"
                                         className="me-3"
-                                        style={{ cursor: 'pointer' }}
+                                        style={{ objectFit: 'cover',  cursor: 'pointer' }}
                                         onClick={() => handleUserClick(user)}
                                     />
                                 </td>

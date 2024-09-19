@@ -1,4 +1,8 @@
 /* Desain Sidebar */
+body {
+  background-color: #f4f6f8;
+}
+
 .sidebar {
   width: 250px;
   height: 100vh;
@@ -64,14 +68,22 @@
   opacity: 0;
 }
 
+.sidebar.collapsed .collapse-btn {
+  margin-left: 0;
+  position: absolute;
+  left: 50%;  /* Posisikan di tengah secara horizontal */
+  transform: translateX(-50%);  /* Pindahkan tombol agar tepat di tengah */
+}
+
 .collapse-btn {
   background: none;
   border: none;
   color: white;
   cursor: pointer;
   font-size: 1.5em;
-  margin-left: auto;
+  margin-left: auto; /* Biarkan ini untuk tampilan default */
   padding: 0;
+  transition: all 0.3s ease;
 }
 
 .collapse-btn:hover {

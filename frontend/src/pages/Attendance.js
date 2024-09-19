@@ -139,7 +139,7 @@ const Attendance = () => {
                 </p>
                 {error && <p className="error-message">{error}</p>}
 
-                <table className="table">
+                <table className="table table-hover">
                     <thead>
                         <tr>
                             <th>User Name</th>
@@ -155,15 +155,15 @@ const Attendance = () => {
                         ) : (
                             filteredData.map((record) => (
                                 <tr key={record.user_id} onClick={() => handleUserClick(record)}>
-                                    <td>{record.name} | {record.role}</td>
-                                    <td>{record.login_at}</td>
-                                    <td>{record.logout_at ? record.logout_at : 'Still logged in'}</td>
+                                    <td style={{ cursor: 'pointer' }}>{record.name} | {record.role}</td>
+                                    <td style={{ cursor: 'pointer' }}>{record.login_at}</td>
+                                    <td style={{ cursor: 'pointer' }}>{record.logout_at ? record.logout_at : 'Still logged in'}</td>
                                 </tr>
                             ))
                         )}
                     </tbody>
                 </table>
-
+                
                 <div className="pagination">
                     <button disabled={page === 1} onClick={() => setPage(page - 1)}>
                         Previous

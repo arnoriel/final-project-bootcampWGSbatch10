@@ -470,7 +470,7 @@ const ManageAdmins = () => {
                                     onChange={(e) => handleInputChange(e, setEditingAdmin, editingAdmin.email, editingAdmin.phone)} // Kirim currentEmail dan currentPhone
                                     className={`form-control mb-2 ${errors.phone || errors.duplicatePhone ? 'is-invalid' : ''}`}
                                 />
-                               
+
 
                                 <label>Department</label>
                                 <input
@@ -612,8 +612,10 @@ const ManageAdmins = () => {
                                     <img
                                         src={`http://10.10.101.34:5000${admin.images}`}
                                         alt={admin.name}
-                                        width="70"
+                                        width="100"
+                                        height="100"
                                         className="me-3"
+                                        style={{ objectFit: 'cover',  cursor: 'pointer' }}
                                         onClick={() => handleShowDetails(admin)}
                                     />
                                 </td>
@@ -626,8 +628,7 @@ const ManageAdmins = () => {
                                 <td className="text-end" style={{ whiteSpace: 'nowrap' }}>
                                     <button
                                         className="btn btn-primary me-2"
-                                        onClick={() => handleEditClick(admin)}
-                                    >
+                                        onClick={() => handleEditClick(admin)}>
                                         Edit
                                     </button>
                                     <button className="btn btn-danger" onClick={() => handleDeleteClick(admin)}>Delete</button>

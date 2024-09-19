@@ -38,6 +38,17 @@ function Sidebar() {
   }, []);
 
   useEffect(() => {
+    // Initialize localStorage for sidebarCollapsed
+    const storedSidebarState = localStorage.getItem('sidebarCollapsed');
+    if (!storedSidebarState) {
+      localStorage.setItem('sidebarCollapsed', 'true'); // Set to collapsed true by default
+      setCollapsed(true); // Set sidebar as collapsed initially
+    } else {
+      setCollapsed(storedSidebarState === 'true');
+    }
+  }, []);
+
+  useEffect(() => {
     const token = localStorage.getItem('token');
 
     if (token) {
