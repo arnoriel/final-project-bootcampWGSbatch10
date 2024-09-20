@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'; 
 import axios from 'axios';
 import Sidebar from './layouts/Sidebar';
+import Header from './layouts/Header';
 import './layouts/MainContent.css';
 
 const LeaveHistory = () => {
@@ -28,6 +29,7 @@ const LeaveHistory = () => {
 
     return (
         <div>
+            <Header />
             <Sidebar />
             <div className="main-content">
                 <h2>Leave History</h2>

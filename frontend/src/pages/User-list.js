@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Sidebar from './layouts/Sidebar';
+import Header from './layouts/Header';
 import './layouts/MainContent.css';
 
 const UserList = () => {
@@ -80,6 +81,7 @@ const UserList = () => {
 
     return (
         <div>
+            <Header />
             <Sidebar />
             <div className="main-content">
                 <h2>User List</h2>

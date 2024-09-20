@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from './layouts/Sidebar';
+import Header from './layouts/Header';
 import './layouts/MainContent.css';
 
 const calculateWorkTime = (user, isLive = false) => {
@@ -111,6 +112,7 @@ const Attendance = () => {
 
     return (
         <div>
+            <Header />
             <Sidebar />
             <div className='main-content'>
                 <h2>Attendance Records</h2>

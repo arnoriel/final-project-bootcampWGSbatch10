@@ -568,8 +568,8 @@ app.post('/api/logout', async (req, res) => {
     }
 });
 
-// Cron job to automatically log out users at 8 PM
-cron.schedule('0 20 * * *', async () => {  // 20:00 (8 PM) server time
+// Cron job to automatically log out users at 5 PM
+cron.schedule('0 17 * * *', async () => {  // 17:00 (5 PM) server time
     try {
         const activeSessions = await pool.query(
             `SELECT user_id, session_token FROM active_sessions WHERE logout_at IS NULL`
@@ -592,9 +592,9 @@ cron.schedule('0 20 * * *', async () => {  // 20:00 (8 PM) server time
             await pool.query('DELETE FROM active_sessions WHERE session_token = $1', [session.session_token]);
         }
 
-        console.log('All active users logged out at 8 PM');
+        console.log('All active users logged out at 5 PM');
     } catch (error) {
-        console.error('Error logging out users at 8 PM:', error);
+        console.error('Error logging out users at 5 PM:', error);
         await logErrorToDatabase(error.message, error.stack);
     }
 });
@@ -680,25 +680,27 @@ app.get('/api/user', authenticate, async (req, res) => {
       const userId = req.user.id;
       const userRole = req.user.role;
   
-      // Cek apakah role pengguna sesuai
       if (userRole !== 'admin' && userRole !== 'employee' && userRole !== 'superadmin') {
         return res.status(403).json({ message: 'Access denied' });
       }
   
-      const user = await pool.query('SELECT name FROM users WHERE id = $1', [userId]);
+      const user = await pool.query('SELECT name, images FROM users WHERE id = $1', [userId]);
   
       if (user.rows.length === 0) {
         return res.status(404).json({ message: 'User not found' });
       }
   
-      res.json({ name: user.rows[0].name });
+      res.json({
+        name: user.rows[0].name,
+        images: user.rows[0].images || '/default-avatar.png', // Default avatar if no image
+      });
     } catch (error) {
       console.error(error);
       await logErrorToDatabase(error.message, error.stack);
       res.status(500).json({ message: 'Internal server error' });
     }
-  });  
-
+  });
+  
 //Get Users
 app.get('/api/users', async (req, res) => {
     try {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './layouts/Sidebar';
+import Header from './layouts/Header';
 import './layouts/MainContent.css';
 
 const Settings = () => {
@@ -68,6 +69,7 @@ const Settings = () => {
 
   return (
     <div>
+      <Header />
       <Sidebar />
       <div className="main-content">
         <h1>Settings</h1>

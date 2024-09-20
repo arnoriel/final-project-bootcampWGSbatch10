@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './layouts/Sidebar'; // Import sidebar
+import Header from './layouts/Header';
 import './layouts/MainContent.css'; // Import CSS untuk konten utama
 import axios from 'axios'; // Import axios
 import {jwtDecode} from 'jwt-decode'; // Import jwt-decode untuk memecahkan token
@@ -64,6 +65,7 @@ function Employee() {
 
   return (
     <div>
+      <Header />
       <Sidebar />
       <div className="main-content">
         <h2>Welcome, {name}</h2>

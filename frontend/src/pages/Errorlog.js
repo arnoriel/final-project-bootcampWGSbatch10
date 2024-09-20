@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Sidebar from './layouts/Sidebar';
+import Header from './layouts/Header';
 import './layouts/MainContent.css';
 
 const ErrorLogsPage = () => {
@@ -21,6 +22,7 @@ const ErrorLogsPage = () => {
 
     return (
         <div>
+            <Header />
             <Sidebar />
             <div className='main-content'>
                 <h2>Error Logs</h2>
