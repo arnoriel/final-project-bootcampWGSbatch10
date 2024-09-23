@@ -115,40 +115,39 @@ const updateAttendancePeriod = async () => {
     try {
         // Kosongkan kolom period dengan 'yesterday' untuk sementara
         await pool.query(`
-            UPDATE attendance 
+            UUPDATE attendance 
             SET period = NULL 
-            WHERE period = 'yesterday'
+            WHERE period = 'yesterday';
         `);
 
         // Pindahkan data dari hari ini ke 'yesterday' hanya jika sudah lewat dari pukul 00.00 (hari berikutnya)
         await pool.query(`
             UPDATE attendance 
             SET period = 'yesterday'
-            WHERE login_at::date = current_date - interval '1 day'
+            WHERE login_at::date = current_date - interval '1 day';
         `);
 
         // Pindahkan data dari minggu lalu ke 'last week'
         await pool.query(`
             UPDATE attendance 
             SET period = 'last_week'
-            WHERE login_at::date < current_date - interval '1 day'
-            AND login_at::date >= current_date - interval '7 days'
+            WHERE login_at::date >= current_date - interval '7 days'
+            AND login_at::date < current_date - interval '1 day';
         `);
 
         // Pindahkan data dari bulan lalu ke 'last month'
         await pool.query(`
             UPDATE attendance 
             SET period = 'last_month'
-            WHERE login_at::date < current_date - interval '7 days'
-            AND login_at::date >= current_date - interval '1 month'
+            WHERE login_at::date >= current_date - interval '1 month'
+            AND login_at::date < current_date - interval '7 days';
         `);
 
         // Pindahkan data dari tahun lalu ke 'last year'
         await pool.query(`
             UPDATE attendance 
             SET period = 'last_year'
-            WHERE login_at::date < current_date - interval '1 month'
-            AND login_at::date >= current_date - interval '1 year'
+            WHERE login_at::date < current_date - interval '1 year';
         `);
     } catch (error) {
         console.error('Error updating attendance period', error);
@@ -187,7 +186,7 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
     const userRole = role || 'employee';
     const password = generateReadablePassword();
     const text =
-    `Dear ${name},
+        `Dear ${name},
 
     Thank You for Submitting your Information to our number, here's your User Information for Our App Account.
 
@@ -229,7 +228,7 @@ app.post('/api/register', upload.single('image'), async (req, res) => {
             [name, email, hashedPassword, phone, division, department, imagePath, userRole]
         );
 
-        transport.sendMail(mailOptions, function(error, info) {
+        transport.sendMail(mailOptions, function (error, info) {
             if (error) {
                 console.log({ error: error.message });
             } else {
@@ -301,7 +300,6 @@ app.post('/api/leave-request', async (req, res) => {
     }
 });
 
-
 //Get Leave Request
 app.get('/api/leave-requests', async (req, res) => {
     const { role, superior_name } = req.query; // Tambahkan query superior_name
@@ -312,7 +310,7 @@ app.get('/api/leave-requests', async (req, res) => {
 
     try {
         const leaveRequests = await pool.query(
-            "SELECT * FROM leave_requests WHERE status = 'Pending' AND superior_name = $1", 
+            "SELECT * FROM leave_requests WHERE status = 'Pending' AND superior_name = $1",
             [superior_name] // Filter leave request berdasarkan superior_name
         );
         res.status(200).json(leaveRequests.rows);
@@ -326,13 +324,13 @@ app.get('/api/leave-requests', async (req, res) => {
 //Leave History
 app.get('/api/leave-history', async (req, res) => {
     try {
-      const result = await pool.query('SELECT * FROM leave_requests ORDER BY created_at DESC');
-      res.status(200).json(result.rows);
+        const result = await pool.query('SELECT * FROM leave_requests ORDER BY created_at DESC');
+        res.status(200).json(result.rows);
     } catch (error) {
-      console.error('Error fetching leave history:', error);
-      res.status(500).json({ message: 'Internal server error' });
+        console.error('Error fetching leave history:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
-  });  
+});
 
 // UPDATE Leave Request Status
 app.put('/api/leave-requests/:id', async (req, res) => {
@@ -461,22 +459,25 @@ app.post('/api/login', async (req, res) => {
 //Endpoint untuk mendapatkan Attendance
 app.get('/api/attendance', async (req, res) => {
     const { period, search = '', page = 1, limit = 10 } = req.query; // Default page 1 and limit 10
-    let dateCondition = '';
     const offset = (page - 1) * limit;  // Calculate offset for pagination
+    let dateCondition = '';
 
-    // Tentukan kondisi tanggal berdasarkan periode
+    // Determine date condition based on period
     switch (period) {
         case 'yesterday':
             dateCondition = `a.login_at::date = current_date - interval '1 day'`;
             break;
         case 'last_week':
-            dateCondition = `a.login_at >= current_date - interval '7 days'`;
+            dateCondition = `a.login_at::date >= current_date - interval '7 days' AND a.login_at::date < current_date - interval '1 day'`;
             break;
         case 'last_month':
-            dateCondition = `a.login_at >= current_date - interval '1 month'`;
+            dateCondition = `a.login_at::date >= current_date - interval '1 month' AND a.login_at::date < current_date - interval '7 days'`;
             break;
         case 'last_year':
-            dateCondition = `a.login_at >= current_date - interval '1 year'`;
+            dateCondition = `a.login_at::date >= current_date - interval '1 year' AND a.login_at::date < current_date - interval '1 month'`;
+            break;
+        case 'all':  // Handle all data
+            dateCondition = 'TRUE';  // No date filter
             break;
         case 'today':
         default:
@@ -485,32 +486,23 @@ app.get('/api/attendance', async (req, res) => {
     }
 
     try {
-        // Buat query SQL
         const attendanceQuery = `
             SELECT 
                 u.id as user_id, 
-                u.name,
+                u.name, 
                 u.role, 
                 to_char(a.login_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as login_at, 
-                to_char(a.logout_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as logout_at,
-                CASE 
-                    WHEN a.logout_at IS NOT NULL THEN 
-                        to_char(a.logout_at - a.login_at, 'HH24:MI:SS')
-                    ELSE 
-                        NULL
-                END as total_work_time
+                to_char(a.logout_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as logout_at
             FROM users u 
             INNER JOIN attendance a ON u.id = a.user_id
             WHERE ${dateCondition}
-            AND u.name ILIKE '%' || $1 || '%'  -- Parameter pencarian nama
+            AND u.name ILIKE '%' || $1 || '%'
             ORDER BY a.login_at DESC
-            LIMIT $2 OFFSET $3;  -- Parameter paginasi
+            LIMIT $2 OFFSET $3;
         `;
 
-        // Eksekusi query untuk mendapatkan data attendance
         const attendanceData = await pool.query(attendanceQuery, [search, limit, offset]);
 
-        // Query untuk mendapatkan total record tanpa limit dan offset (untuk paginasi)
         const totalQuery = `
             SELECT COUNT(*) FROM users u 
             INNER JOIN attendance a ON u.id = a.user_id
@@ -519,8 +511,7 @@ app.get('/api/attendance', async (req, res) => {
         `;
         const totalRecords = await pool.query(totalQuery, [search]);
 
-        // Kirim respons dengan data attendance, total records, page, dan limit
-        res.status(200).json({ 
+        res.status(200).json({
             attendance: attendanceData.rows,
             total: totalRecords.rows[0].count,
             page: parseInt(page),
@@ -568,36 +559,36 @@ app.post('/api/logout', async (req, res) => {
     }
 });
 
-// Cron job to automatically log out users at 5 PM
-cron.schedule('0 17 * * *', async () => {  // 17:00 (5 PM) server time
-    try {
-        const activeSessions = await pool.query(
-            `SELECT user_id, session_token FROM active_sessions WHERE logout_at IS NULL`
-        );
+// // Cron job to automatically log out users at 5 PM
+// cron.schedule('0 17 * * *', async () => {  // 17:00 (5 PM) server time
+//     try {
+//         const activeSessions = await pool.query(
+//             `SELECT user_id, session_token FROM active_sessions WHERE logout_at IS NULL`
+//         );
 
-        for (const session of activeSessions.rows) {
-            // Log out each active user
-            await pool.query(
-                'UPDATE attendance SET logout_at = NOW() WHERE user_id = $1 AND login_at::date = current_date AND logout_at IS NULL',
-                [session.user_id]
-            );
+//         for (const session of activeSessions.rows) {
+//             // Log out each active user
+//             await pool.query(
+//                 'UPDATE attendance SET logout_at = NOW() WHERE user_id = $1 AND login_at::date = current_date AND logout_at IS NULL',
+//                 [session.user_id]
+//             );
 
-            // Update the session table logout_at time
-            await pool.query(
-                'UPDATE active_sessions SET logout_at = NOW() WHERE session_token = $1',
-                [session.session_token]
-            );
+//             // Update the session table logout_at time
+//             await pool.query(
+//                 'UPDATE active_sessions SET logout_at = NOW() WHERE session_token = $1',
+//                 [session.session_token]
+//             );
 
-            // Remove the session
-            await pool.query('DELETE FROM active_sessions WHERE session_token = $1', [session.session_token]);
-        }
+//             // Remove the session
+//             await pool.query('DELETE FROM active_sessions WHERE session_token = $1', [session.session_token]);
+//         }
 
-        console.log('All active users logged out at 5 PM');
-    } catch (error) {
-        console.error('Error logging out users at 5 PM:', error);
-        await logErrorToDatabase(error.message, error.stack);
-    }
-});
+//         console.log('All active users logged out at 5 PM');
+//     } catch (error) {
+//         console.error('Error logging out users at 5 PM:', error);
+//         await logErrorToDatabase(error.message, error.stack);
+//     }
+// });
 
 //Forgot Password
 app.post('/api/forgot-password', async (req, res) => {
@@ -677,30 +668,30 @@ app.use('/api/protected-route', async (req, res, next) => {
 // Endpoint untuk mendapatkan data pengguna saat ini
 app.get('/api/user', authenticate, async (req, res) => {
     try {
-      const userId = req.user.id;
-      const userRole = req.user.role;
-  
-      if (userRole !== 'admin' && userRole !== 'employee' && userRole !== 'superadmin') {
-        return res.status(403).json({ message: 'Access denied' });
-      }
-  
-      const user = await pool.query('SELECT name, images FROM users WHERE id = $1', [userId]);
-  
-      if (user.rows.length === 0) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      res.json({
-        name: user.rows[0].name,
-        images: user.rows[0].images || '/default-avatar.png', // Default avatar if no image
-      });
+        const userId = req.user.id;
+        const userRole = req.user.role;
+
+        if (userRole !== 'admin' && userRole !== 'employee' && userRole !== 'superadmin') {
+            return res.status(403).json({ message: 'Access denied' });
+        }
+
+        const user = await pool.query('SELECT name, images FROM users WHERE id = $1', [userId]);
+
+        if (user.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json({
+            name: user.rows[0].name,
+            images: user.rows[0].images || '/default-avatar.png', // Default avatar if no image
+        });
     } catch (error) {
-      console.error(error);
-      await logErrorToDatabase(error.message, error.stack);
-      res.status(500).json({ message: 'Internal server error' });
+        console.error(error);
+        await logErrorToDatabase(error.message, error.stack);
+        res.status(500).json({ message: 'Internal server error' });
     }
-  });
-  
+});
+
 //Get Users
 app.get('/api/users', async (req, res) => {
     try {
@@ -969,50 +960,50 @@ app.get('/api/error-logs', async (req, res) => {
 // Mendapatkan semua data dari tabel settings
 app.get('/api/settings', async (req, res) => {
     try {
-      const result = await pool.query('SELECT * FROM settings'); // Mengambil semua entri
-      res.json(result.rows); // Mengembalikan seluruh array rows
+        const result = await pool.query('SELECT * FROM settings'); // Mengambil semua entri
+        res.json(result.rows); // Mengembalikan seluruh array rows
     } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-  
-  
-  // Mendapatkan satu setting berdasarkan id
-app.get('/settings/:id', async (req, res) => {
-    try {
-      const { id } = req.params;
-      const result = await pool.query('SELECT * FROM settings WHERE id = $1', [id]);
-      res.json(result.rows[0]);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
+        res.status(500).json({ error: err.message });
     }
 });
 
-  // Mengupdate setting
+
+// Mendapatkan satu setting berdasarkan id
+app.get('/settings/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await pool.query('SELECT * FROM settings WHERE id = $1', [id]);
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Mengupdate setting
 app.put('/settings/:id', async (req, res) => {
     const { id } = req.params;
     const { name, version, status } = req.body;
-  
+
     try {
-      const query = `
+        const query = `
         UPDATE settings
         SET name = $1, version = $2, status = $3
         WHERE id = $4
         RETURNING *;
       `;
-      const values = [name, version, status, id];
-      const result = await pool.query(query, values);
-  
-      if (result.rows.length > 0) {
-        res.json(result.rows[0]);
-      } else {
-        res.status(404).json({ error: 'Setting not found' });
-      }
+        const values = [name, version, status, id];
+        const result = await pool.query(query, values);
+
+        if (result.rows.length > 0) {
+            res.json(result.rows[0]);
+        } else {
+            res.status(404).json({ error: 'Setting not found' });
+        }
     } catch (error) {
-      console.error('Error updating setting:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error updating setting:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-});  
+});
 
 //Port
 app.listen(port, () => {

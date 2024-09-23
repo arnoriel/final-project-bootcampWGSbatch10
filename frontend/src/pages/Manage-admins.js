@@ -617,7 +617,7 @@ const ManageAdmins = () => {
                                         width="100"
                                         height="100"
                                         className="me-3"
-                                        style={{ objectFit: 'cover',  cursor: 'pointer' }}
+                                        style={{ objectFit: 'cover', cursor: 'pointer' }}
                                         onClick={() => handleShowDetails(admin)}
                                     />
                                 </td>

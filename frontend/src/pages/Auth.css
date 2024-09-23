@@ -57,12 +57,12 @@
 }
 
 .auth-form .show-hide-password {
+  font-size: 14px;
   color: #007bff;
   cursor: pointer;
-  font-size: 0.9em;
-  margin-left: 10px;
-  text-align: right;
-  white-space: nowrap; /* Prevent text from wrapping */
+  user-select: none;
+  min-width: 90px; /* Fixed width to avoid layout shifting */
+  text-align: right; /* Align text to the right */
 }
 
 .auth-form .show-hide-password:hover {

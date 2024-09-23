@@ -21,7 +21,7 @@ const users = [
         division: 'Management',
         role: 'superadmin',
         department: 'Administrator',
-        images: path.join('uploads', 'superadmin.jpg')
+        images: path.join('/uploads', 'superadmin.jpg')
     },
 ];
 

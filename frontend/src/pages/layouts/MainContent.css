@@ -262,6 +262,38 @@ table tbody tr:last-child td {
   border-top: 1px solid #dee2e6;
 }
 
+.modal-logout {
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1060;
+}
+
+.modal-logout .modal-content {
+  max-width: 400px;
+  width: 100%;
+  padding: 30px;
+}
+
+.modal-logout .modal-header {
+  justify-content: center;
+}
+
+.modal-logout .modal-title {
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.modal-logout .modal-footer {
+  justify-content: space-around; /* Tombol di tengah */
+}
+
 /* Mengubah tampilan btn-close agar hanya "X" */
 .btn-close {
   background-color: transparent !important; /* Menghilangkan background */

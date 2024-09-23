@@ -150,8 +150,7 @@ function Sidebar() {
             </li>
           </>
         )}
-        {/* Tampilkan Leave History hanya untuk admin atau superadmin */}
-        {(role === 'superadmin' || role === 'admin') && (
+        {(role === 'superadmin' || role === 'admin' || role == 'employee') && (
           <li>
             <Link to="/leave-history" className={isActive('/leave-history') ? 'active' : ''}>
               <FontAwesomeIcon icon={faHistory} className="fa-icon" />
@@ -199,26 +198,6 @@ function Sidebar() {
           Version: {appVersion}
         </div>
       )}
-
-
-      <button onClick={handleLogoutClick} className="logout-button">
-        <FontAwesomeIcon icon={faSignOutAlt} className="fa-icon" />
-        {!collapsed && 'Logout'}
-      </button>
-
-
-
-      {showLogoutModal && (
-        <div className="modal-backdrop">
-          <div className="modal-content">
-            <h5>Confirm Logout</h5>
-            <p>Are you sure you want to log out?</p>
-            <button onClick={closeModal}>Cancel</button>
-            <button onClick={handleLogout}>Logout</button>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

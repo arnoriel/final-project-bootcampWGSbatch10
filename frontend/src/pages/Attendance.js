@@ -5,8 +5,8 @@ import Header from './layouts/Header';
 import './layouts/MainContent.css';
 
 const calculateWorkTime = (user, isLive = false) => {
-    const loginTime = new Date(user.login_at_original); // Menggunakan tanggal asli
-    const logoutTime = user.logout_at_original ? new Date(user.logout_at_original) : new Date(); // Menggunakan tanggal asli atau sekarang jika live
+    const loginTime = new Date(user.login_at_original); // Use the original login date
+    const logoutTime = user.logout_at_original ? new Date(user.logout_at_original) : new Date(); // Use the original logout date or current time if live
     const diffInMs = logoutTime.getTime() - loginTime.getTime();
     const hours = Math.floor(diffInMs / 1000 / 60 / 60);
     const minutes = Math.floor((diffInMs / 1000 / 60) % 60);
@@ -17,7 +17,7 @@ const calculateWorkTime = (user, isLive = false) => {
 const formatDateToLocalString = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString('en-GB', {
-        weekday: 'long', // Menambahkan hari dalam format panjang (misalnya, "Monday")
+        weekday: 'long',
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -29,16 +29,21 @@ const formatDateToLocalString = (dateString) => {
 
 const Attendance = () => {
     const [attendanceData, setAttendanceData] = useState([]);
+    const [allAttendanceData, setAllAttendanceData] = useState([]);
     const [period, setPeriod] = useState('today');
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [total, setTotal] = useState(0);
-    const [selectedUser, setSelectedUser] = useState(null);
     const [error, setError] = useState('');
+    const [selectedUser, setSelectedUser] = useState(null);
     const [liveWorkTime, setLiveWorkTime] = useState('');
+    const [allPage, setAllPage] = useState(1);
+    const [allLimit, setAllLimit] = useState(10);
+    const [allTotal, setAllTotal] = useState(0);
 
     useEffect(() => {
+        setAttendanceData([]); // Reset the data when the period changes
         fetchAttendanceData();
     }, [period, search, page, limit]);
 
@@ -56,6 +61,14 @@ const Attendance = () => {
         };
     }, [selectedUser]);
 
+    useEffect(() => {
+        fetchAttendanceData();
+    }, [period, search, page, limit]);
+
+    useEffect(() => {
+        fetchAllAttendanceData();
+    }, []);
+
     const fetchAttendanceData = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -66,12 +79,11 @@ const Attendance = () => {
                 },
             });
 
-            // Simpan login_at dan logout_at sebagai objek Date, dan format hanya untuk tampilan
             const dataWithLocalTime = response.data.attendance.map(record => ({
                 ...record,
-                login_at_original: new Date(record.login_at), // Menyimpan Date asli
+                login_at_original: new Date(record.login_at),
                 logout_at_original: record.logout_at ? new Date(record.logout_at) : null,
-                login_at: formatDateToLocalString(record.login_at), // Tampilkan tanggal yang diformat
+                login_at: formatDateToLocalString(record.login_at),
                 logout_at: record.logout_at ? formatDateToLocalString(record.logout_at) : null,
             }));
 
@@ -79,6 +91,31 @@ const Attendance = () => {
             setTotal(response.data.total);
         } catch (err) {
             setError('Failed to fetch attendance data');
+        }
+    };
+
+    const fetchAllAttendanceData = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`http://10.10.101.34:5000/api/attendance`, {
+                params: { period: 'all', search: '', page: 1, limit: 1000 },
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            const dataWithLocalTime = response.data.attendance.map(record => ({
+                ...record,
+                login_at_original: new Date(record.login_at),
+                logout_at_original: record.logout_at ? new Date(record.logout_at) : null,
+                login_at: formatDateToLocalString(record.login_at),
+                logout_at: record.logout_at ? formatDateToLocalString(record.logout_at) : null,
+            }));
+
+            setAllAttendanceData(dataWithLocalTime);
+            setAllTotal(response.data.total);
+        } catch (err) {
+            setError('Failed to fetch all attendance data');
         }
     };
 
@@ -106,7 +143,13 @@ const Attendance = () => {
         setPage(1);
     };
 
+    const handleAllLimitChange = (e) => {
+        setAllLimit(parseInt(e.target.value));
+        setAllPage(1);
+    };
+
     const totalPages = Math.ceil(total / limit);
+    const totalAllPages = Math.ceil(allTotal / allLimit);
 
     const filteredData = attendanceData.filter(record => record.user_id !== 1);
 
@@ -114,7 +157,7 @@ const Attendance = () => {
         <div>
             <Header />
             <Sidebar />
-            <div className='main-content'>
+            <div className="main-content">
                 <h2>Attendance Records</h2>
                 <div className="search-pagination">
                     <input
@@ -165,7 +208,7 @@ const Attendance = () => {
                         )}
                     </tbody>
                 </table>
-                
+
                 <div className="pagination">
                     <button disabled={page === 1} onClick={() => setPage(page - 1)}>
                         Previous
@@ -182,12 +225,61 @@ const Attendance = () => {
                             <div className="modal-content">
                                 <h2>{selectedUser.name}'s Work Time</h2>
                                 <p>Total Work Time: {selectedUser.logout_at ? calculateWorkTime(selectedUser) : liveWorkTime}</p>
-                                <button className="close-button" onClick={closeModal}>Close</button> {/* Tombol X */}
+                                <button className="close-button" onClick={closeModal}>Close</button>
                             </div>
                         </div>
                     </div>
                 )}
 
+                {/* All Attendance Data */}
+                <h2>All Attendance Data</h2>
+                <p>Rows per page:
+                    <select className="rows-per-page" value={allLimit} onChange={handleAllLimitChange}>
+                        <option value={10}>10 rows</option>
+                        <option value={20}>20 rows</option>
+                        <option value={50}>50 rows</option>
+                    </select>
+                </p>
+                <table className="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>User Name</th>
+                            <th>Login Time</th>
+                            <th>Logout Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {allAttendanceData
+                            .filter(record => record.role !== 'superadmin')  // Filter out superadmin
+                            .slice((allPage - 1) * allLimit, allPage * allLimit)
+                            .length === 0 ? (
+                            <tr>
+                                <td colSpan="3">No attendance records found.</td>
+                            </tr>
+                        ) : (
+                            allAttendanceData
+                                .filter(record => record.role !== 'superadmin')  // Filter out superadmin
+                                .slice((allPage - 1) * allLimit, allPage * allLimit)
+                                .map((record) => (
+                                    <tr key={record.user_id} onClick={() => handleUserClick(record)}>
+                                        <td style={{ cursor: 'pointer' }}>{record.name} | {record.role}</td>
+                                        <td style={{ cursor: 'pointer' }}>{record.login_at}</td>
+                                        <td style={{ cursor: 'pointer' }}>{record.logout_at ? record.logout_at : 'Still logged in'}</td>
+                                    </tr>
+                                ))
+                        )}
+                    </tbody>
+                </table>
+
+                <div className="pagination">
+                    <button disabled={allPage === 1} onClick={() => setAllPage(allPage - 1)}>
+                        Previous
+                    </button>
+                    <span>Page {allPage} of {totalAllPages}</span>
+                    <button disabled={allPage === totalAllPages} onClick={() => setAllPage(allPage + 1)}>
+                        Next
+                    </button>
+                </div>
             </div>
         </div>
     );
