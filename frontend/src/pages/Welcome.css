@@ -62,6 +62,22 @@
   transform: scale(1.05);
 }
 
+.welcome-footer {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  text-align: center;
+  color: #ffffff;
+  font-size: 0.5rem;
+  font-family: 'Roboto', sans-serif;
+  animation: fadeIn 1.5s ease-in-out;
+  opacity: 1;
+}
+
+.welcome-footer p {
+  margin: 0;
+}
+
 /* Animasi */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
@@ -83,6 +99,11 @@
     padding: 8px 25px;
     font-size: 1rem;
   }
+
+  .welcome-footer {
+    font-size: 0.9rem;
+  }
+
 }
 
 @media (max-width: 576px) {
@@ -104,5 +125,9 @@
   .welcome-button {
     padding: 8px 20px;
     font-size: 1rem;
+  }
+
+  .welcome-footer {
+    font-size: 0.8rem;
   }
 }

@@ -36,7 +36,16 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ storage: storage });
+// Accept only images
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+    } else {
+        cb(new Error('Only image files are allowed'), false);
+    }
+};
+
+const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 // Generate random password
 const generateReadablePassword = () => {
@@ -559,37 +568,6 @@ app.post('/api/logout', async (req, res) => {
     }
 });
 
-// // Cron job to automatically log out users at 5 PM
-// cron.schedule('0 17 * * *', async () => {  // 17:00 (5 PM) server time
-//     try {
-//         const activeSessions = await pool.query(
-//             `SELECT user_id, session_token FROM active_sessions WHERE logout_at IS NULL`
-//         );
-
-//         for (const session of activeSessions.rows) {
-//             // Log out each active user
-//             await pool.query(
-//                 'UPDATE attendance SET logout_at = NOW() WHERE user_id = $1 AND login_at::date = current_date AND logout_at IS NULL',
-//                 [session.user_id]
-//             );
-
-//             // Update the session table logout_at time
-//             await pool.query(
-//                 'UPDATE active_sessions SET logout_at = NOW() WHERE session_token = $1',
-//                 [session.session_token]
-//             );
-
-//             // Remove the session
-//             await pool.query('DELETE FROM active_sessions WHERE session_token = $1', [session.session_token]);
-//         }
-
-//         console.log('All active users logged out at 5 PM');
-//     } catch (error) {
-//         console.error('Error logging out users at 5 PM:', error);
-//         await logErrorToDatabase(error.message, error.stack);
-//     }
-// });
-
 //Forgot Password
 app.post('/api/forgot-password', async (req, res) => {
     const { email } = req.body;
@@ -703,6 +681,54 @@ app.get('/api/users', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+//API Update User
+// app.put('/api/user/update', authenticate, upload.single('image'), async (req, res) => {
+//     const userId = req.user.id;
+//     const userRole = req.user.role;
+//     const { name, password } = req.body;
+//     let image = req.file ? `/uploads/${req.file.filename}` : null; // Store image path if uploaded
+
+//     try {
+//         // Superadmin can update name, image, and password
+//         if (userRole === 'superadmin') {
+//             const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
+//             const updateQuery = `
+//                 UPDATE users 
+//                 SET 
+//                     name = $1, 
+//                     image = COALESCE($2, image), 
+//                     password = COALESCE($3, password), 
+//                     updated_at = CURRENT_TIMESTAMP 
+//                 WHERE id = $4
+//             `;
+//             await pool.query(updateQuery, [name, image, hashedPassword, userId]);
+//         } 
+//         // Admin and employee can only update password
+//         else if (userRole === 'admin' || userRole === 'employee') {
+//             if (!password) {
+//                 return res.status(400).json({ message: 'Password is required' });
+//             }
+//             const hashedPassword = await bcrypt.hash(password, 10);
+//             await pool.query('UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [hashedPassword, userId]);
+//         } else {
+//             return res.status(403).json({ message: 'Access denied' });
+//         }
+
+//         res.status(200).json({ message: 'Profile updated successfully' });
+//     } catch (error) {
+//         console.error('Error updating profile:', {
+//             message: error.message,
+//             stack: error.stack,
+//             query: updateQuery,
+//             userId,
+//             userRole,
+//             image
+//         });
+//         await logErrorToDatabase(error.message, error.stack);
+//         res.status(500).json({ message: 'Internal server error' });
+//     }
+// });
 
 // Endpoint to get active status of users
 app.get('/api/users/status', async (req, res) => {
@@ -967,7 +993,6 @@ app.get('/api/settings', async (req, res) => {
     }
 });
 
-
 // Mendapatkan satu setting berdasarkan id
 app.get('/settings/:id', async (req, res) => {
     try {
@@ -982,16 +1007,16 @@ app.get('/settings/:id', async (req, res) => {
 // Mengupdate setting
 app.put('/settings/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, version, status } = req.body;
+    const { name, version, status, greeting, information } = req.body;
 
     try {
         const query = `
         UPDATE settings
-        SET name = $1, version = $2, status = $3
-        WHERE id = $4
+        SET name = $1, version = $2, status = $3, greeting = $4, information = $5
+        WHERE id = $6
         RETURNING *;
       `;
-        const values = [name, version, status, id];
+        const values = [name, version, status, greeting, information, id];
         const result = await pool.query(query, values);
 
         if (result.rows.length > 0) {

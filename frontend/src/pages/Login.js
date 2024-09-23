@@ -9,6 +9,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false); // State untuk fitur show password
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [appInformation, setAppInformation] = useState(''); // Default value for version
 
   // Cek apakah user sudah login saat pertama kali halaman di-load
   useEffect(() => {
@@ -68,6 +69,26 @@ function Login() {
     }
   };
 
+  // Fetch app Information
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('http://10.10.101.34:5000/api/settings');
+        if (response.ok) {
+          const data = await response.json();
+          const appSetting = data.find((setting) => setting.id === 1); // Assuming the settings have id = 1
+          setAppInformation(appSetting ? appSetting.information : '');
+        } else {
+          console.error('Failed to fetch settings');
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
   // Function to navigate to the Leave page
   const handleLeaveClick = () => {
     navigate('/leave');
@@ -116,11 +137,17 @@ function Login() {
             <a href="/forgot">Forgot Password?</a>
           </p>
         </form>
-        
+
         {/* New button for Leave page */}
         <button className="leave-button" onClick={handleLeaveClick}>
           Apply for Leave
         </button>
+
+         {/* New Information Card */}
+          <div className="info-card">
+        <p>Information</p>
+        <h5>{appInformation}</h5>
+        </div>
       </div>
     </div>
   );

@@ -567,7 +567,7 @@ const ManageEmployees = () => {
                         >
                             <div className="modal-content">
                                 <div className="modal-header">
-                                    <h5 className="modal-title">employee Information</h5>
+                                    <h5 className="modal-title">Employee Information</h5>
                                     <button type="button" className="btn-close" onClick={() => setShowDetailModal(false)}></button>
                                 </div>
                                 <div className="modal-body d-flex">

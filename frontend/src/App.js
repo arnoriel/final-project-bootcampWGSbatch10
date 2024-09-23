@@ -19,6 +19,7 @@ import Leave from './pages/Leave';
 import LeaveHistory from './pages/LeaveHistory';
 import Settings from './pages/Settings';
 import About from './pages/About';
+import Profile from './pages/Profile';
 import ProtectedRoute from './ProtectedRoute';
 
 function App() {
@@ -93,6 +94,15 @@ function App() {
           element={
             <ProtectedRoute role={["superadmin", "admin", "employee"]}>
               <About />
+            </ProtectedRoute>
+          }
+        />
+        {/* Add profile route here */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute role={["superadmin", "admin", "employee"]}>
+              <Profile />
             </ProtectedRoute>
           }
         />

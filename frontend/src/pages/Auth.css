@@ -109,6 +109,24 @@
   background-color: #45a049;
 }
 
+.info-card {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.info-card h3 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.info-card p {
+  color: #555;
+}
+
 /* Media Queries untuk Responsivitas */
 @media (max-width: 768px) {
   .auth-card {
