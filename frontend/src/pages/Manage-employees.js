@@ -319,6 +319,25 @@ const ManageEmployees = () => {
         setShowDiscardModal(false);
     };
 
+    const departments = {
+        IT: ['Software Development', 'Network Engineering', 'Technical Support'],
+        UIUX: ['User Interface Design', 'User Experience Research', 'Prototyping'],
+        Marketing: ['Content Creation', 'SEO', 'Social Media Management'],
+        Sales: ['Business Development', 'Account Management', 'Lead Generation'],
+        CS: ['Customer Service', 'Technical Support', 'Client Onboarding']
+    };
+
+    const handleDepartmentChange = (e, setAdmin) => {
+        const { name, value } = e.target;
+        setAdmin(prevState => ({
+            ...prevState,
+            [name]: value,
+            division: ''  // Reset division when department changes
+        }));
+    };
+
+    const isDivisionDisabled = (employee) => !employee.department;
+
     return (
         <div>
             <Header />
@@ -376,24 +395,33 @@ const ManageEmployees = () => {
                                 />
 
                                 <label>Department</label>
-                                <input
-                                    type="text"
+                                <select
                                     name="department"
-                                    placeholder="Department"
                                     value={newEmployee.department}
-                                    onChange={(e) => handleInputChange(e, setNewEmployee)}
+                                    onChange={(e) => handleDepartmentChange(e, setNewEmployee)}
                                     className="form-control mb-2"
-                                />
+                                >
+                                    <option value="">Select Department</option>
+                                    {Object.keys(departments).map((dept) => (
+                                        <option key={dept} value={dept}>{dept}</option>
+                                    ))}
+                                </select>
 
                                 <label>Division</label>
-                                <input
-                                    type="text"
+                                <select
                                     name="division"
-                                    placeholder="Division"
                                     value={newEmployee.division}
                                     onChange={(e) => handleInputChange(e, setNewEmployee)}
                                     className="form-control mb-2"
-                                />
+                                    disabled={isDivisionDisabled(newEmployee)}
+                                >
+                                    <option value="">Select Division</option>
+                                    {newEmployee.department &&
+                                        departments[newEmployee.department].map((div) => (
+                                            <option key={div} value={div}>{div}</option>
+                                        ))
+                                    }
+                                </select>
 
                                 <label>Image</label>
                                 {newEmployee.imagePreview && (  // Show image preview
@@ -461,27 +489,35 @@ const ManageEmployees = () => {
                                     onChange={(e) => handleInputChange(e, setEditingEmployee, editingEmployee.email, editingEmployee.phone)} // Kirim currentEmail dan currentPhone
                                     className={`form-control mb-2 ${errors.phone || errors.duplicatePhone ? 'is-invalid' : ''}`}
                                 />
-                               
 
                                 <label>Department</label>
-                                <input
-                                    type="text"
+                                <select
                                     name="department"
-                                    placeholder="Department"
                                     value={editingEmployee.department}
-                                    onChange={(e) => handleInputChange(e, setEditingEmployee)}
+                                    onChange={(e) => handleDepartmentChange(e, setEditingEmployee)}
                                     className="form-control mb-2"
-                                />
+                                >
+                                    <option value="">Select Department</option>
+                                    {Object.keys(departments).map((dept) => (
+                                        <option key={dept} value={dept}>{dept}</option>
+                                    ))}
+                                </select>
 
                                 <label>Division</label>
-                                <input
-                                    type="text"
+                                <select
                                     name="division"
-                                    placeholder="Division"
                                     value={editingEmployee.division}
                                     onChange={(e) => handleInputChange(e, setEditingEmployee)}
                                     className="form-control mb-2"
-                                />
+                                    disabled={isDivisionDisabled(editingEmployee)}
+                                >
+                                    <option value="">Select Division</option>
+                                    {editingEmployee.department &&
+                                        departments[editingEmployee.department].map((div) => (
+                                            <option key={div} value={div}>{div}</option>
+                                        ))
+                                    }
+                                </select>
 
                                 <label>Profile Picture</label>
                                 {editingEmployee.imagePreview && (
@@ -607,7 +643,7 @@ const ManageEmployees = () => {
                                         width="100"
                                         height="100"
                                         className="me-3"
-                                        style={{ objectFit: 'cover',  cursor: 'pointer' }}
+                                        style={{ objectFit: 'cover', cursor: 'pointer' }}
                                         onClick={() => handleShowDetails(employee)}
                                     />
                                 </td>

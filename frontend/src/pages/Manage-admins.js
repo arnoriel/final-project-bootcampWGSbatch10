@@ -331,6 +331,25 @@ const ManageAdmins = () => {
         setShowDiscardModal(false);
     };
 
+    const departments = {
+        IT: ['System Administration', 'IT Support Management', 'Data Security'],
+        HR: ['Recruitment & Talent Acquisition', 'Payroll & Benefits Administration', 'Employee Relations', 'Training & Development'],
+        Finance: ['Accounting & Reporting', 'Budgeting & Forecasting', 'Tax Compliance', 'Accounts Payable & Receivable'],
+        Operations: ['Project Management', 'Supply Chain Management', 'Vendor & Contract Management'],
+        Legal: ['Corporate Compliance', 'Contracts & Negotiations', 'Risk Management']
+    };
+
+    const handleDepartmentChange = (e, setAdmin) => {
+        const { name, value } = e.target;
+        setAdmin(prevState => ({
+            ...prevState,
+            [name]: value,
+            division: ''  // Reset division when department changes
+        }));
+    };
+
+    const isDivisionDisabled = (admin) => !admin.department;
+
     return (
         <div>
             <Header />
@@ -388,25 +407,33 @@ const ManageAdmins = () => {
                                 />
 
                                 <label>Department</label>
-                                <input
-                                    type="text"
+                                <select
                                     name="department"
-                                    placeholder="Department"
                                     value={newAdmin.department}
-                                    onChange={(e) => handleInputChange(e, setNewAdmin)}
+                                    onChange={(e) => handleDepartmentChange(e, setNewAdmin)}
                                     className="form-control mb-2"
-                                />
+                                >
+                                    <option value="">Select Department</option>
+                                    {Object.keys(departments).map((dept) => (
+                                        <option key={dept} value={dept}>{dept}</option>
+                                    ))}
+                                </select>
 
                                 <label>Division</label>
-                                <input
-                                    type="text"
+                                <select
                                     name="division"
-                                    placeholder="Division"
                                     value={newAdmin.division}
                                     onChange={(e) => handleInputChange(e, setNewAdmin)}
                                     className="form-control mb-2"
-                                />
-
+                                    disabled={isDivisionDisabled(newAdmin)}
+                                >
+                                    <option value="">Select Division</option>
+                                    {newAdmin.department &&
+                                        departments[newAdmin.department].map((div) => (
+                                            <option key={div} value={div}>{div}</option>
+                                        ))
+                                    }
+                                </select>
                                 <label>Image</label>
                                 {newAdmin.imagePreview && (  // Show image preview
                                     <div className="mb-2">
@@ -475,24 +502,33 @@ const ManageAdmins = () => {
 
 
                                 <label>Department</label>
-                                <input
-                                    type="text"
+                                <select
                                     name="department"
-                                    placeholder="Department"
                                     value={editingAdmin.department}
-                                    onChange={(e) => handleInputChange(e, setEditingAdmin)}
+                                    onChange={(e) => handleDepartmentChange(e, setEditingAdmin)}
                                     className="form-control mb-2"
-                                />
+                                >
+                                    <option value="">Select Department</option>
+                                    {Object.keys(departments).map((dept) => (
+                                        <option key={dept} value={dept}>{dept}</option>
+                                    ))}
+                                </select>
 
                                 <label>Division</label>
-                                <input
-                                    type="text"
+                                <select
                                     name="division"
-                                    placeholder="Division"
                                     value={editingAdmin.division}
                                     onChange={(e) => handleInputChange(e, setEditingAdmin)}
                                     className="form-control mb-2"
-                                />
+                                    disabled={isDivisionDisabled(editingAdmin)}
+                                >
+                                    <option value="">Select Division</option>
+                                    {editingAdmin.department &&
+                                        departments[editingAdmin.department].map((div) => (
+                                            <option key={div} value={div}>{div}</option>
+                                        ))
+                                    }
+                                </select>
 
                                 <label>Profile Picture</label>
                                 {editingAdmin.imagePreview && (

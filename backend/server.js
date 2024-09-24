@@ -682,53 +682,76 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-//API Update User
-// app.put('/api/user/update', authenticate, upload.single('image'), async (req, res) => {
-//     const userId = req.user.id;
-//     const userRole = req.user.role;
-//     const { name, password } = req.body;
-//     let image = req.file ? `/uploads/${req.file.filename}` : null; // Store image path if uploaded
+// Endpoint untuk mendapatkan data pengguna yang sedang login
+app.get('/api/user/:id', authenticate, async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
 
-//     try {
-//         // Superadmin can update name, image, and password
-//         if (userRole === 'superadmin') {
-//             const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
-//             const updateQuery = `
-//                 UPDATE users 
-//                 SET 
-//                     name = $1, 
-//                     image = COALESCE($2, image), 
-//                     password = COALESCE($3, password), 
-//                     updated_at = CURRENT_TIMESTAMP 
-//                 WHERE id = $4
-//             `;
-//             await pool.query(updateQuery, [name, image, hashedPassword, userId]);
-//         } 
-//         // Admin and employee can only update password
-//         else if (userRole === 'admin' || userRole === 'employee') {
-//             if (!password) {
-//                 return res.status(400).json({ message: 'Password is required' });
-//             }
-//             const hashedPassword = await bcrypt.hash(password, 10);
-//             await pool.query('UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [hashedPassword, userId]);
-//         } else {
-//             return res.status(403).json({ message: 'Access denied' });
-//         }
+        if (user.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
-//         res.status(200).json({ message: 'Profile updated successfully' });
-//     } catch (error) {
-//         console.error('Error updating profile:', {
-//             message: error.message,
-//             stack: error.stack,
-//             query: updateQuery,
-//             userId,
-//             userRole,
-//             image
-//         });
-//         await logErrorToDatabase(error.message, error.stack);
-//         res.status(500).json({ message: 'Internal server error' });
-//     }
-// });
+        const baseURL = 'http://10.10.101.34:5000'; // Base URL untuk gambar
+
+        res.json({
+            name: user.rows[0].name,
+            email: user.rows[0].email,
+            phone: user.rows[0].phone,
+            department: user.rows[0].department,
+            division: user.rows[0].division,
+            image: user.rows[0].image ? `${baseURL}${user.rows[0].image}` : `${baseURL}/default.jpg`, // Gambar default jika tidak ada gambar pengguna
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Endpoint untuk mengubah password dan mengirim email
+app.post('/api/user/change-password', authenticate, async (req, res) => {
+    try {
+        const { newPassword } = req.body;
+        const userId = req.user.id;
+
+        // Hashing password baru sebelum menyimpannya
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update password pengguna di database
+        await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
+
+        // Kirim email konfirmasi perubahan password
+        const user = await pool.query('SELECT email FROM users WHERE id = $1', [userId]);
+        const userEmail = user.rows[0].email;
+
+        let transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL, // gunakan env variable
+                pass: process.env.EMAIL_PASSWORD, // gunakan env variable
+            },
+        });
+
+        let mailOptions = {
+            from: process.env.EMAIL,
+            to: userEmail,
+            subject: 'Password Changed Successfully',
+            text: 'Your password has been changed successfully.',
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                return console.log(error);
+            }
+            console.log('Email sent: ' + info.response);
+        });
+
+        res.json({ message: 'Password updated and email sent.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to update password.' });
+    }
+});
 
 // Endpoint to get active status of users
 app.get('/api/users/status', async (req, res) => {

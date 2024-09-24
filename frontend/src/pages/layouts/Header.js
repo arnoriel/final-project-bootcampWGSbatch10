@@ -38,7 +38,7 @@ function Header() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-
+  
     if (token) {
       axios.get('http://10.10.101.34:5000/api/user', {
         headers: {
@@ -48,14 +48,14 @@ function Header() {
       .then((response) => {
         setUser({
           name: response.data.name,
-          images: response.data.images ? `http://10.10.101.34:5000${response.data.images}` : '', // Use provided image URL or fallback to default
+          images: response.data.images ? `http://10.10.101.34:5000${response.data.images}` : '/assets/default.jpg', // Make sure the path to default.jpg is correct
         });
       })
       .catch((error) => {
         console.error('Error fetching user data:', error);
       });
     }
-  }, []);
+  }, []);  
 
   // Close dropdown if clicked outside
   useEffect(() => {
@@ -102,7 +102,7 @@ function Header() {
       </div>
       <div className="user-info">
         <img 
-          src={user.images || '/assets/default.jpg'} // Fallback to default image in assets
+          src={user.images || '/assets/default.jpg'} // Fallback to default image
           alt="User" 
           className="user-image" 
           onClick={() => setDropdownVisible(!dropdownVisible)} // Toggle dropdown visibility

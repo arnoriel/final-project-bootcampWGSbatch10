@@ -72,12 +72,12 @@ const Settings = () => {
       <Header />
       <Sidebar />
       <div className="main-content">
-        <h1>Update Settings</h1>
+        <h1>Settings</h1>
         {notification && <p className="notification">{notification}</p>} {/* Notification message */}
         {settings.length > 0 ? (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="name">Name</label>
+              <label htmlFor="name">App Name</label>
               <input
                 name="name"
                 placeholder="Name"
@@ -88,7 +88,7 @@ const Settings = () => {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="version">Version</label>
+              <label htmlFor="version">App Version</label>
               <input
                 name="version"
                 placeholder="Version"

@@ -12,7 +12,6 @@ function Sidebar() {
   const location = useLocation();
   const [role, setRole] = useState('');
   const [collapsed, setCollapsed] = useState(localStorage.getItem('sidebarCollapsed') === 'true');
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [appName, setAppName] = useState(''); // Default value
   const [appVersion, setAppVersion] = useState(''); // Default value for version
 
@@ -92,9 +91,6 @@ function Sidebar() {
   };
 
   const isActive = (path) => location.pathname === path;
-
-  const handleLogoutClick = () => setShowLogoutModal(true);
-  const closeModal = () => setShowLogoutModal(false);
 
   const toggleCollapse = () => {
     // Update collapsed state

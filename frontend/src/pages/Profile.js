@@ -7,43 +7,57 @@ import './layouts/MainContent.css';
 import './Profile.css'; // Import the new CSS file for profile-specific styles
 
 function Profile() {
-    const [user, setUser] = useState({ name: '', image: '', role: '', password: '' });
-    const [editMode, setEditMode] = useState(false); // Controls whether the form is in edit mode
+    const [user, setUser] = useState({ 
+        name: '', 
+        email: '', 
+        phone: '', 
+        department: '', 
+        division: '', 
+        image: '' 
+    });
     const [newPassword, setNewPassword] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
-          axios.get('http://10.10.101.34:5000/api/user', {
-            headers: { 'Authorization': `Bearer ${token}` },
-          })
-          .then((response) => {
-            setUser({
-              name: response.data.name,
-              image: response.data.images ? `http://10.10.101.34:5000${response.data.images}` : '/assets/default.jpg',
-            });
-          })
-          .catch((error) => {
-            console.error('Error fetching profile:', error);
-          });
-        }
-      }, []);      
+            // Extract user ID from the token
+            const { id } = JSON.parse(atob(token.split('.')[1]));
 
-    const handleUpdate = () => {
-        const token = localStorage.getItem('token');
-        const updatedData = { name: user.name, image: user.image, password: newPassword };
-
-        axios.put('http://10.10.101.34:5000/api/user/update', updatedData, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-            .then(() => {
-                alert('Profile updated successfully');
-                setEditMode(false);
+            axios.get(`http://10.10.101.34:5000/api/user/${id}`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+            })
+            .then((response) => {
+                setUser({
+                    name: response.data.name,
+                    email: response.data.email,
+                    phone: response.data.phone,
+                    department: response.data.department,
+                    division: response.data.division,
+                    image: response.data.image || '/default-avatar.png', // Default avatar if no image
+                });
             })
             .catch((error) => {
-                console.error('Error updating profile:', error);
+                console.error('Error fetching profile:', error);
             });
+        } else {
+            navigate('/login');  // Redirect to login if no token
+        }
+    }, [navigate]);
+
+    const handlePasswordChange = () => {
+        const token = localStorage.getItem('token');
+        
+        axios.post('http://10.10.101.34:5000/api/user/change-password', { newPassword }, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(() => {
+            alert('Password changed successfully');
+            setNewPassword('');
+        })
+        .catch((error) => {
+            console.error('Error changing password:', error);
+        });
     };
 
     return (
@@ -51,43 +65,27 @@ function Profile() {
             <Header />
             <Sidebar />
             <div className="main-content">
-                <h2>User Profile</h2>
-                <img src={user.image} alt="User Profile" className="profile-image" />
-                {editMode ? (
-                    <>
-                        {user.role === 'superadmin' && (
-                            <>
-                                <label>Name:</label>
-                                <input
-                                    type="text"
-                                    value={user.name}
-                                    onChange={(e) => setUser({ ...user, name: e.target.value })}
-                                />
-                                <label>Image URL:</label>
-                                <input
-                                    type="text"
-                                    value={user.image}
-                                    onChange={(e) => setUser({ ...user, image: e.target.value })}
-                                />
-                            </>
-                        )}
-                        <label>Password:</label>
+                <div className="profile-card">
+                    {/* <img src={user.image} alt="User Profile" className="profile-image"></img> */}
+                    <h2>{user.name}</h2>
+                    <p>Email: {user.email}</p>
+                    <p>Phone: {user.phone}</p>
+                    <p>Department: {user.department}</p>
+                    <p>Division: {user.division}</p>
+
+                    {/* Form for changing password */}
+                    <div className="password-change">
+                        <h3>Change Password</h3>
+                        <label>New Password:</label>
                         <input
                             type="password"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            placeholder="New Password"
+                            placeholder="Enter new password"
                         />
-                        <button onClick={handleUpdate}>Save Changes</button>
-                    </>
-                ) : (
-                    <>
-                        <p>Name: {user.name}</p>
-                        {user.role !== 'employee' && (
-                            <button onClick={() => setEditMode(true)}>Edit Profile</button>
-                        )}
-                    </>
-                )}
+                        <button onClick={handlePasswordChange}>Change Password</button>
+                    </div>
+                </div>
             </div>
         </div>
     );

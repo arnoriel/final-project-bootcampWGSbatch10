@@ -92,3 +92,31 @@
 .dropdown-icon {
   margin-right: 8px;
 }
+
+@media (max-width: 480px) {
+  .user-info {
+    flex-direction: column;
+    align-items: center;
+    padding: 4px;
+  }
+
+  .user-name {
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  .user-image {
+    width: 28px;
+    height: 28px;
+  }
+
+  .datetime-container {
+    margin-right: 0;
+    align-items: center;
+  }
+
+  .header-container {
+    justify-content: center;
+    padding: 5px;
+  }
+}
