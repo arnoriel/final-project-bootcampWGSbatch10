@@ -187,7 +187,7 @@ const Attendance = () => {
                 <table className="table table-hover">
                     <thead>
                         <tr>
-                            <th>User Name</th>
+                            <th>Name | Department</th>
                             <th>Login Time</th>
                             <th>Logout Time</th>
                         </tr>
@@ -200,7 +200,7 @@ const Attendance = () => {
                         ) : (
                             filteredData.map((record) => (
                                 <tr key={record.user_id} onClick={() => handleUserClick(record)}>
-                                    <td style={{ cursor: 'pointer' }}>{record.name} | {record.role}</td>
+                                    <td style={{ cursor: 'pointer' }}>{record.name} | {record.department}</td>
                                     <td style={{ cursor: 'pointer' }}>{record.login_at}</td>
                                     <td style={{ cursor: 'pointer' }}>{record.logout_at ? record.logout_at : 'Still logged in'}</td>
                                 </tr>
@@ -258,11 +258,11 @@ const Attendance = () => {
                             </tr>
                         ) : (
                             allAttendanceData
-                                .filter(record => record.role !== 'superadmin')  // Filter out superadmin
+                                .filter(record => record.department !== 'superadmin')  // Filter out superadmin
                                 .slice((allPage - 1) * allLimit, allPage * allLimit)
                                 .map((record) => (
                                     <tr key={record.user_id} onClick={() => handleUserClick(record)}>
-                                        <td style={{ cursor: 'pointer' }}>{record.name} | {record.role}</td>
+                                        <td style={{ cursor: 'pointer' }}>{record.name} | {record.department}</td>
                                         <td style={{ cursor: 'pointer' }}>{record.login_at}</td>
                                         <td style={{ cursor: 'pointer' }}>{record.logout_at ? record.logout_at : 'Still logged in'}</td>
                                     </tr>

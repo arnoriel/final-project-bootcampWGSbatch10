@@ -348,6 +348,35 @@ table tbody tr:last-child td {
   }
 }
 
+/* Styling for department dropdown */
+.department-dropdown {
+  padding: 10px;
+  width: 30%;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  font-size: 16px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.department-dropdown:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.department-dropdown:hover {
+  background-color: #fff;
+  border-color: #007bff;
+}
+
+/* For a uniform look across browsers */
+.department-dropdown option {
+  padding: 10px;
+}
+
 @media (max-width: 768px) {
   .main-content {
     margin-left: 200px; /* Sesuaikan dengan sidebar pada layar lebih kecil */

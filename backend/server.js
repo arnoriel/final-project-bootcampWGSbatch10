@@ -330,10 +330,32 @@ app.get('/api/leave-requests', async (req, res) => {
     }
 });
 
-//Leave History
+// Leave History with Search
 app.get('/api/leave-history', async (req, res) => {
+    const { name, leave_type, created_at } = req.query;
+
+    let query = 'SELECT * FROM leave_requests WHERE 1=1';
+    const queryParams = [];
+
+    if (name) {
+        queryParams.push(`%${name}%`);
+        query += ` AND name ILIKE $${queryParams.length}`;
+    }
+
+    if (leave_type) {
+        queryParams.push(leave_type);
+        query += ` AND leave_type = $${queryParams.length}`;
+    }
+
+    if (created_at) {
+        queryParams.push(created_at);
+        query += ` AND DATE(created_at) = $${queryParams.length}`;
+    }
+
+    query += ' ORDER BY created_at DESC';
+
     try {
-        const result = await pool.query('SELECT * FROM leave_requests ORDER BY created_at DESC');
+        const result = await pool.query(query, queryParams);
         res.status(200).json(result.rows);
     } catch (error) {
         console.error('Error fetching leave history:', error);
@@ -499,7 +521,7 @@ app.get('/api/attendance', async (req, res) => {
             SELECT 
                 u.id as user_id, 
                 u.name, 
-                u.role, 
+                u.department,
                 to_char(a.login_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as login_at, 
                 to_char(a.logout_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') as logout_at
             FROM users u 
@@ -670,10 +692,22 @@ app.get('/api/user', authenticate, async (req, res) => {
     }
 });
 
-//Get Users
+// Get Users with optional department filter
 app.get('/api/users', async (req, res) => {
+    const { department } = req.query;
+
     try {
-        const result = await pool.query('SELECT * FROM users ORDER BY updated_at DESC');
+        let query = 'SELECT * FROM users';
+        const values = [];
+
+        if (department) {
+            query += ' WHERE department = $1';
+            values.push(department);
+        }
+
+        query += ' ORDER BY updated_at DESC';
+        
+        const result = await pool.query(query, values);
         res.status(200).json(result.rows);
     } catch (error) {
         console.error(error);

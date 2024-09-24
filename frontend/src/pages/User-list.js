@@ -10,6 +10,9 @@ const UserList = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
 
+    // New state for department filter
+    const [selectedDepartment, setSelectedDepartment] = useState('All');
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(6); // Default rows per page
@@ -46,6 +49,11 @@ const UserList = () => {
         setCurrentPage(1); // Reset to the first page on search
     };
 
+    const handleDepartmentChange = (event) => {
+        setSelectedDepartment(event.target.value);
+        setCurrentPage(1); // Reset to the first page on department filter
+    };
+
     const handleUserClick = (user) => {
         setSelectedUser(user);
         setShowDetailModal(true);
@@ -53,8 +61,9 @@ const UserList = () => {
 
     const filteredUsers = users
         .filter(user =>
-            user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase())
+            (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
+            (selectedDepartment === 'All' || user.department === selectedDepartment)
         )
         .sort((a, b) => {
             if (a.status === 'online' && b.status !== 'online') return -1;
@@ -84,14 +93,36 @@ const UserList = () => {
             <Header />
             <Sidebar />
             <div className="main-content">
-                <h2>User List</h2>
-                <input
-                    type="text"
-                    placeholder="Search users..."
-                    value={searchTerm}
-                    onChange={handleSearch}
-                    style={{ marginBottom: '20px', padding: '10px', width: '100%' }}
-                />
+                <h2>User List ({filteredUsers.length})</h2>
+                
+                <div style={{ display: 'flex', marginBottom: '20px' }}>
+                    <input
+                        type="text"
+                        placeholder="Search users..."
+                        value={searchTerm}
+                        onChange={handleSearch}
+                        style={{ padding: '10px', width: '70%', marginRight: '10px' }}
+                    />
+                    
+                    <select
+                        value={selectedDepartment}
+                        onChange={handleDepartmentChange}
+                        style={{ padding: '10px', width: '30%', height: '50px' }}
+                        className="department-dropdown"
+                    >
+                        <option value="All">All Departments</option>
+                        <option value="IT">IT</option>
+                        <option value="HR">HR</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Operations">Operations</option>
+                        <option value="Legal">Legal</option>
+                        <option value="UIUX">UI/UX</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Sales">Sales</option>
+                        <option value="CS">CS</option>
+                    </select>
+                </div>
+
                 <div style={{ marginBottom: '20px' }}>
                     <label htmlFor="rows-per-page">Rows per page:</label>
                     <select
@@ -106,6 +137,7 @@ const UserList = () => {
                         <option value={50}>50</option>
                     </select>
                 </div>
+
                 <table>
                     <tbody>
                         {currentUsers.length > 0 ? currentUsers.map((user) => (

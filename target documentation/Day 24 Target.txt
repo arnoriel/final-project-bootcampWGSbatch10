@@ -1,0 +1,7 @@
+Day 24 Target:
+- Fixed Profile Page
+- Added Change Password Function
+- Added Attendance Charts
+- Change Role to Department in Attendance
+- Show List from Department and Division option
+- Search for Leave History

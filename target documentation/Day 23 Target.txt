@@ -1,0 +1,5 @@
+Day 23 Target:
+
+- Moved Logout Button
+- Fixed Attendance
+- Settings Update Greetings and Information
