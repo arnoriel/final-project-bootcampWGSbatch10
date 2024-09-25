@@ -590,6 +590,40 @@ app.post('/api/logout', async (req, res) => {
     }
 });
 
+// Job untuk logout semua user pada pukul 00:00 setiap hari
+cron.schedule('0 0 * * *', async () => {
+    try {
+        // Ambil semua sesi aktif yang belum logout
+        const activeSessions = await pool.query('SELECT user_id, session_token FROM active_sessions WHERE logout_at IS NULL');
+
+        if (activeSessions.rows.length > 0) {
+            for (const session of activeSessions.rows) {
+                const userId = session.user_id;
+                const token = session.session_token;
+
+                // Update logout_at di tabel attendance untuk hari ini
+                await pool.query(
+                    'UPDATE attendance SET logout_at = NOW() WHERE user_id = $1 AND login_at::date = current_date AND logout_at IS NULL',
+                    [userId]
+                );
+
+                // Update logout_at di active_sessions
+                await pool.query(
+                    'UPDATE active_sessions SET logout_at = NOW() WHERE session_token = $1',
+                    [token]
+                );
+
+                // Hapus sesi setelah logout
+                await pool.query('DELETE FROM active_sessions WHERE session_token = $1', [token]);
+            }
+        }
+
+        console.log('Logout otomatis berhasil dijalankan pada pukul 00:00');
+    } catch (error) {
+        console.error('Error saat menjalankan logout otomatis:', error);
+    }
+});
+
 //Forgot Password
 app.post('/api/forgot-password', async (req, res) => {
     const { email } = req.body;

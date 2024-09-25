@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './layouts/Sidebar'; // Import sidebar
 import Header from './layouts/Header';
 import './layouts/MainContent.css'; // Import CSS untuk konten utama
+import './AttendanceChartLayout.css';
 import axios from 'axios'; // Import axios
 import AttendanceChart from '../components/AttendanceChart';
 import { jwtDecode } from 'jwt-decode'; // Import jwt-decode untuk memecahkan token
@@ -37,25 +38,25 @@ function Superadmin() {
           'Authorization': `Bearer ${token}`
         }
       })
-      .then(response => {
-        setName(response.data.name);
+        .then(response => {
+          setName(response.data.name);
 
-        // Setelah mendapatkan nama superadmin, gunakan nama ini untuk mengambil leave request
-        return axios.get('http://10.10.101.34:5000/api/leave-requests', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          params: { role: 'superadmin', superior_name: response.data.name } // Kirim superior_name sebagai query
-        });
-      })
-      .then(response => {
-        setLeaveRequests(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching leave requests:', error);
-        setError('Failed to load leave requests.');
-      })
-      .finally(() => setLoading(false));
+          // Setelah mendapatkan nama superadmin, gunakan nama ini untuk mengambil leave request
+          return axios.get('http://10.10.101.34:5000/api/leave-requests', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            params: { role: 'superadmin', superior_name: response.data.name } // Kirim superior_name sebagai query
+          });
+        })
+        .then(response => {
+          setLeaveRequests(response.data);
+        })
+        .catch(error => {
+          console.error('Error fetching leave requests:', error);
+          setError('Failed to load leave requests.');
+        })
+        .finally(() => setLoading(false));
 
     } catch (error) {
       console.error('Invalid token:', error);
@@ -85,15 +86,15 @@ function Superadmin() {
       },
       params: { role: 'superadmin' }
     })
-    .then(response => {
-      setLeaveRequests(prevRequests =>
-        prevRequests.map(req => req.id === id ? { ...req, status: newStatus } : req)
-      );
-    })
-    .catch(error => {
-      console.error('Error updating leave request status:', error);
-      setError('Failed to update leave request status.');
-    });
+      .then(response => {
+        setLeaveRequests(prevRequests =>
+          prevRequests.map(req => req.id === id ? { ...req, status: newStatus } : req)
+        );
+      })
+      .catch(error => {
+        console.error('Error updating leave request status:', error);
+        setError('Failed to update leave request status.');
+      });
   };
 
   return (
@@ -148,15 +149,12 @@ function Superadmin() {
           </div>
         </div>
 
-            {/* Attendance Charts */}
-        <div className="card mt-4">
-          <div className="card-body">
-            <h3>Attendance Overview</h3>
-            <AttendanceChart period="today" />
-            <AttendanceChart period="yesterday" />
-            <AttendanceChart period="last_week" />
-            <AttendanceChart period="last_month" />
-            <AttendanceChart period="last_year" />
+        {/* Attendance Chart untuk satu bulan */}
+        <div className="chart-container">
+          <h2>Attendance Overview (Monthly)</h2>
+
+          <div className="long-chart">
+            <AttendanceChart />
           </div>
         </div>
 

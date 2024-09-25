@@ -377,6 +377,55 @@ table tbody tr:last-child td {
   padding: 10px;
 }
 
+/* Adjust form width */
+.search-form {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+}
+
+/* General styling for form-group */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-right: 10px; /* Reduced margin for tighter spacing */
+  flex-grow: 1; /* Allow elements to grow to fill space */
+}
+
+/* Label styling */
+.form-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Styling for input and select */
+.form-group select, 
+.form-group input[type="date"], 
+.form-group input[type="text"] {
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%; /* Make input take full width */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.2s ease-in-out;
+}
+
+/* Focus state */
+.form-group select:focus, 
+.form-group input[type="date"]:focus, 
+.form-group input[type="text"]:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
 @media (max-width: 768px) {
   .main-content {
     margin-left: 200px; /* Sesuaikan dengan sidebar pada layar lebih kecil */

@@ -62,7 +62,7 @@ const UserList = () => {
     const filteredUsers = users
         .filter(user =>
             (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
+                user.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
             (selectedDepartment === 'All' || user.department === selectedDepartment)
         )
         .sort((a, b) => {
@@ -94,7 +94,7 @@ const UserList = () => {
             <Sidebar />
             <div className="main-content">
                 <h2>User List ({filteredUsers.length})</h2>
-                
+
                 <div style={{ display: 'flex', marginBottom: '20px' }}>
                     <input
                         type="text"
@@ -103,7 +103,7 @@ const UserList = () => {
                         onChange={handleSearch}
                         style={{ padding: '10px', width: '70%', marginRight: '10px' }}
                     />
-                    
+
                     <select
                         value={selectedDepartment}
                         onChange={handleDepartmentChange}
@@ -116,7 +116,7 @@ const UserList = () => {
                         <option value="Finance">Finance</option>
                         <option value="Operations">Operations</option>
                         <option value="Legal">Legal</option>
-                        <option value="UIUX">UI/UX</option>
+                        <option value="UIUX">UIUX</option>
                         <option value="Marketing">Marketing</option>
                         <option value="Sales">Sales</option>
                         <option value="CS">CS</option>
@@ -135,8 +135,10 @@ const UserList = () => {
                         <option value={11}>11</option>
                         <option value={20}>20</option>
                         <option value={50}>50</option>
+                        <option value={100}>100</option>
                     </select>
                 </div>
+
 
                 <table>
                     <tbody>
@@ -149,7 +151,7 @@ const UserList = () => {
                                         width="75"
                                         height="75"
                                         className="me-3"
-                                        style={{ objectFit: 'cover',  cursor: 'pointer' }}
+                                        style={{ objectFit: 'cover', cursor: 'pointer' }}
                                         onClick={() => handleUserClick(user)}
                                     />
                                 </td>

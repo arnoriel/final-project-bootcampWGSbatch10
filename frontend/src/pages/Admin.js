@@ -4,6 +4,7 @@ import Sidebar from './layouts/Sidebar'; // Import sidebar
 import Header from './layouts/Header';
 import './layouts/MainContent.css'; // Import CSS untuk konten utama
 import AttendanceChart from '../components/AttendanceChart';
+import './AttendanceChartLayout.css'
 import axios from 'axios'; // Import axios
 import { jwtDecode } from 'jwt-decode'; // Import jwt-decode untuk memecahkan token
 
@@ -148,18 +149,14 @@ function Admin() {
           </div>
         </div>
 
-             {/* Attendance Charts */}
-        <div className="card mt-4">
-          <div className="card-body">
-            <h3>Attendance Overview</h3>
-            <AttendanceChart period="today" />
-            <AttendanceChart period="yesterday" />
-            <AttendanceChart period="last_week" />
-            <AttendanceChart period="last_month" />
-            <AttendanceChart period="last_year" />
+            {/* Attendance Chart untuk satu bulan */}
+        <div className="chart-container">
+          <h2>Attendance Overview (Monthly)</h2>
+
+          <div className="long-chart">
+            <AttendanceChart />
           </div>
         </div>
-
       </div>
     </div>
   );

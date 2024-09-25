@@ -233,13 +233,6 @@ const Attendance = () => {
 
                 {/* All Attendance Data */}
                 <h2>All Attendance Data</h2>
-                <p>Rows per page:
-                    <select className="rows-per-page" value={allLimit} onChange={handleAllLimitChange}>
-                        <option value={10}>10 rows</option>
-                        <option value={20}>20 rows</option>
-                        <option value={50}>50 rows</option>
-                    </select>
-                </p>
                 <table className="table table-hover">
                     <thead>
                         <tr>
@@ -251,7 +244,6 @@ const Attendance = () => {
                     <tbody>
                         {allAttendanceData
                             .filter(record => record.role !== 'superadmin')  // Filter out superadmin
-                            .slice((allPage - 1) * allLimit, allPage * allLimit)
                             .length === 0 ? (
                             <tr>
                                 <td colSpan="3">No attendance records found.</td>
@@ -259,7 +251,6 @@ const Attendance = () => {
                         ) : (
                             allAttendanceData
                                 .filter(record => record.department !== 'superadmin')  // Filter out superadmin
-                                .slice((allPage - 1) * allLimit, allPage * allLimit)
                                 .map((record) => (
                                     <tr key={record.user_id} onClick={() => handleUserClick(record)}>
                                         <td style={{ cursor: 'pointer' }}>{record.name} | {record.department}</td>
@@ -271,15 +262,6 @@ const Attendance = () => {
                     </tbody>
                 </table>
 
-                <div className="pagination">
-                    <button disabled={allPage === 1} onClick={() => setAllPage(allPage - 1)}>
-                        Previous
-                    </button>
-                    <span>Page {allPage} of {totalAllPages}</span>
-                    <button disabled={allPage === totalAllPages} onClick={() => setAllPage(allPage + 1)}>
-                        Next
-                    </button>
-                </div>
             </div>
         </div>
     );
